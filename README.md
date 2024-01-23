@@ -2,6 +2,19 @@ A complete solution for E-commerce Business with exclusive features & super resp
 <<<<<<< HEAD
 # F-Sbd_Ecommerce
 =======
+-----------------------------------------------------
+
+Admin Phone: 01987654321
+Admin Password: fnsbdadmin24
+
+-----------------------------------------------------
+
+Seller Phone: 01234567890
+Seller Password: 123456
+
+-----------------------------------------------------
+
+
 # F-Sbd_Ecommerce
 #1
 ![Alt text](https://raw.githubusercontent.com/sanad-bhowmik/F-Sbd_Ecommerce/main/public/assets/img/demo/1.png?token=GHSAT0AAAAAACLMHIGGTJ6MXP5HRQ7SSMX6ZNOEFEQ)

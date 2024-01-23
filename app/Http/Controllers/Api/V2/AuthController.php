@@ -39,11 +39,11 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required',
             'password' => 'required|min:6|confirmed',
-            'email_or_phone' => [
-                'required',
-                Rule::when($request->register_by === 'email', ['email', 'unique:users,email']),
-                Rule::when($request->register_by === 'phone', ['numeric', 'unique:users,phone']),
-            ],
+            // 'email_or_phone' => [
+            //     'required',
+            //     Rule::when($request->register_by === 'email', ['email', 'unique:users,email']),
+            //     Rule::when($request->register_by === 'phone', ['numeric', 'unique:users,phone']),
+            // ],
             'g-recaptcha-response' => [
                 Rule::when(get_setting('google_recaptcha') == 1, ['required', new Recaptcha()], ['sometimes'])
             ]
@@ -139,82 +139,139 @@ class AuthController extends Controller
         }
     }
 
-    public function login(Request $request)
-    {
-        $messages = array(
-            'email.required' => $request->login_by == 'email' ? translate('Email is required') : translate('Phone is required'),
-            'email.email' => translate('Email must be a valid email address'),
-            'email.numeric' => translate('Phone must be a number.'),
-            'password.required' => translate('Password is required'),
-        );
-        $validator = Validator::make($request->all(), [
-            'password' => 'required',
-            'login_by' => 'required',
-            'email' => [
-                'required',
-                Rule::when($request->login_by === 'email', ['email', 'required']),
-                Rule::when($request->login_by === 'phone', ['numeric', 'required']),
-            ]
-        ], $messages);
+    // public function login(Request $request)
+    // {
+    //     $messages = array(
+    //         'email.required' => $request->login_by == 'email' ? translate('Email is required') : translate('Phone is required'),
+    //         'email.email' => translate('Email must be a valid email address'),
+    //         'email.numeric' => translate('Phone must be a number.'),
+    //         'password.required' => translate('Password is required'),
+    //     );
+    //     $validator = Validator::make($request->all(), [
+    //         'password' => 'required',
+    //         'login_by' => 'required',
+    //         'email' => [
+    //             'required',
+    //             Rule::when($request->login_by === 'email', ['email', 'required']),
+    //             Rule::when($request->login_by === 'phone', ['numeric', 'required']),
+    //         ]
+    //     ], $messages);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'result' => false,
-                'message' => $validator->errors()->all()
-            ]);
-        }
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'result' => false,
+    //             'message' => $validator->errors()->all()
+    //         ]);
+    //     }
 
-        $delivery_boy_condition = $request->has('user_type') && $request->user_type == 'delivery_boy';
-        $seller_condition = $request->has('user_type') && $request->user_type == 'seller';
-        $req_email = $request->email;
+    //     $delivery_boy_condition = $request->has('user_type') && $request->user_type == 'delivery_boy';
+    //     $seller_condition = $request->has('user_type') && $request->user_type == 'seller';
+    //     $req_email = $request->email;
 
-        if ($delivery_boy_condition) {
-            $user = User::whereIn('user_type', ['delivery_boy'])
-                ->where(function ($query) use ($req_email) {
-                    $query->where('email', $req_email)
-                        ->orWhere('phone', $req_email);
-                })
-                ->first();
-        } elseif ($seller_condition) {
-            $user = User::whereIn('user_type', ['seller'])
-                ->where(function ($query) use ($req_email) {
-                    $query->where('email', $req_email)
-                        ->orWhere('phone', $req_email);
-                })
-                ->first();
-        } else {
-            $user = User::whereIn('user_type', ['customer'])
-                ->where(function ($query) use ($req_email) {
-                    $query->where('email', $req_email)
-                        ->orWhere('phone', $req_email);
-                })
-                ->first();
-        }
-        // if (!$delivery_boy_condition) {
-        if (!$delivery_boy_condition && !$seller_condition) {
-            if (\App\Utility\PayhereUtility::create_wallet_reference($request->identity_matrix) == false) {
-                return response()->json(['result' => false, 'message' => 'Identity matrix error', 'user' => null], 401);
-            }
-        }
+    //     if ($delivery_boy_condition) {
+    //         $user = User::whereIn('user_type', ['delivery_boy'])
+    //             ->where(function ($query) use ($req_email) {
+    //                 $query->where('email', $req_email)
+    //                     ->orWhere('phone', $req_email);
+    //             })
+    //             ->first();
+    //     } elseif ($seller_condition) {
+    //         $user = User::whereIn('user_type', ['seller'])
+    //             ->where(function ($query) use ($req_email) {
+    //                 $query->where('email', $req_email)
+    //                     ->orWhere('phone', $req_email);
+    //             })
+    //             ->first();
+    //     } else {
+    //         $user = User::whereIn('user_type', ['customer'])
+    //             ->where(function ($query) use ($req_email) {
+    //                 $query->where('email', $req_email)
+    //                     ->orWhere('phone', $req_email);
+    //             })
+    //             ->first();
+    //     }
+    //     // if (!$delivery_boy_condition) {
+    //     if (!$delivery_boy_condition && !$seller_condition) {
+    //         if (\App\Utility\PayhereUtility::create_wallet_reference($request->identity_matrix) == false) {
+    //             return response()->json(['result' => false, 'message' => 'Identity matrix error', 'user' => null], 401);
+    //         }
+    //     }
 
-        if ($user != null) {
-            if (!$user->banned) {
-                if (Hash::check($request->password, $user->password)) {
+    //     if ($user != null) {
+    //         if (!$user->banned) {
+    //             if (Hash::check($request->password, $user->password)) {
 
-                    // if ($user->email_verified_at == null) {
-                    //     return response()->json(['result' => false, 'message' => translate('Please verify your account'), 'user' => null], 401);
-                    // }
-                    return $this->loginSuccess($user);
-                } else {
-                    return response()->json(['result' => false, 'message' => translate('Unauthorized'), 'user' => null], 401);
-                }
-            } else {
-                return response()->json(['result' => false, 'message' => translate('User is banned'), 'user' => null], 401);
-            }
-        } else {
-            return response()->json(['result' => false, 'message' => translate('User not found'), 'user' => null], 401);
-        }
+    //                 // if ($user->email_verified_at == null) {
+    //                 //     return response()->json(['result' => false, 'message' => translate('Please verify your account'), 'user' => null], 401);
+    //                 // }
+    //                 return $this->loginSuccess($user);
+    //             } else {
+    //                 return response()->json(['result' => false, 'message' => translate('Unauthorized'), 'user' => null], 401);
+    //             }
+    //         } else {
+    //             return response()->json(['result' => false, 'message' => translate('User is banned'), 'user' => null], 401);
+    //         }
+    //     } else {
+    //         return response()->json(['result' => false, 'message' => translate('User not found'), 'user' => null], 401);
+    //     }
+    // }
+    
+public function login(Request $request)
+{
+    $messages = array(
+        'password.required' => translate('Password is required'),
+    );
+
+    $validator = Validator::make($request->all(), [
+        'password' => 'required',
+        'login_by' => 'required',
+        // 'email' => [
+        //     Rule::when($request->login_by === 'email', ['email', 'required']),
+        //     Rule::when($request->login_by === 'phone', ['numeric', 'required']),
+        // ]
+    ], $messages);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'result' => false,
+            'message' => $validator->errors()->all()
+        ]);
     }
+
+    $userTypeConditions = [
+        'delivery_boy' => ['delivery_boy'],
+        'seller' => ['seller'],
+        'customer' => ['customer'],
+    ];
+
+    $userTypeCondition = $request->has('user_type') ? $request->user_type : 'customer';
+
+    $user = User::whereIn('user_type', $userTypeConditions[$userTypeCondition])
+        ->where(function ($query) use ($request) {
+            $query->where('email', $request->email)
+                ->orWhere('phone', $request->email);
+        })
+        ->first();
+
+    if ($user != null) {
+        if (!$user->banned) {
+            if (Hash::check($request->password, $user->password)) {
+                // Uncomment the email verification check if needed
+                // if ($user->email_verified_at == null) {
+                //     return response()->json(['result' => false, 'message' => translate('Please verify your account'), 'user' => null], 401);
+                // }
+                return $this->loginSuccess($user);
+            } else {
+                return response()->json(['result' => false, 'message' => translate('Unauthorized'), 'user' => null], 401);
+            }
+        } else {
+            return response()->json(['result' => false, 'message' => translate('User is banned'), 'user' => null], 401);
+        }
+    } else {
+        return response()->json(['result' => false, 'message' => translate('User not found'), 'user' => null], 401);
+    }
+}
+
 
     public function user(Request $request)
     {
