@@ -9,8 +9,11 @@
                     <div class="card shadow-none rounded-0 border-0">
                         <div class="row no-gutters">
                             <!-- Left Side Image-->
+                            <!--<div class="col-lg-6">-->
+                            <!--    <img src="{{ uploaded_asset(get_setting('customer_login_page_image')) }}" alt="{{ translate('Customer Login Page Image') }}" class="img-fit h-100">-->
+                            <!--</div>-->
                             <div class="col-lg-6">
-                                <img src="https://img.freepik.com/free-photo/modern-living-room-interior-design_53876-145504.jpg?w=740&t=st=1705906262~exp=1705906862~hmac=bd805faacd5abef22e88a75d9576db18386d5591f46f991258301f173b031695" alt="{{ translate('Customer Login Page Image') }}" class="img-fit h-100">
+                                <img src="https://img.freepik.com/free-photo/online-school-equipment-home_23-2149041148.jpg?w=740&t=st=1705923676~exp=1705924276~hmac=9aaabc301a5f438779bc1aee013339354b240f36fc7112d3e79b18f3caaef97c" alt="{{ translate('Customer Login Page Image') }}" class="img-fit h-100">
                             </div>
 
                             <!-- Right Side -->
@@ -56,8 +59,8 @@
                                                 </div>
                                             @else
                                                 <div class="form-group">
-                                                    <label for="phone" class="fs-12 fw-700 text-soft-dark">{{  translate('phone') }}</label>
-                                                    <input type="phone" class="form-control{{ $errors->has('phone') ? ' is-invalid' : '' }} rounded-0" value="{{ old('phone') }}" placeholder="{{  translate('johndoe@example.com') }}" name="phone" id="phone" autocomplete="off">
+                                                    <label for="email" class="fs-12 fw-700 text-soft-dark">{{  translate('Email') }}</label>
+                                                    <input type="email" class="form-control{{ $errors->has('email') ? ' is-invalid' : '' }} rounded-0" value="{{ old('email') }}" placeholder="{{  translate('johndoe@example.com') }}" name="email" id="email" autocomplete="off">
                                                     @if ($errors->has('email'))
                                                         <span class="invalid-feedback" role="alert">
                                                             <strong>{{ $errors->first('email') }}</strong>

@@ -236,11 +236,11 @@ class LoginController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-     protected function credentials(Request $request)
+    protected function credentials(Request $request)
     {
-        if ($request->filled('phone')) {
-            return ['phone' => $request->phone, 'password' => $request->password];
-        } elseif ($request->filled('email')) {
+        if ($request->get('phone') != null) {
+            return ['phone' => "+{$request['country_code']}{$request['phone']}", 'password' => $request->get('password')];
+        } elseif ($request->get('email') != null) {
             return $request->only($this->username(), 'password');
         }
     }
