@@ -9,8 +9,11 @@
                     <div class="card shadow-none rounded-0 border-0">
                         <div class="row no-gutters">
                             <!-- Left Side Image-->
+                            <!--<div class="col-lg-6">-->
+                            <!--    <img src="{{ uploaded_asset(get_setting('seller_login_page_image')) }}" alt="{{ translate('Seller Login Page Image') }}" class="img-fit h-100">-->
+                            <!--</div>-->
                             <div class="col-lg-6">
-                                <img src="{{ uploaded_asset(get_setting('seller_login_page_image')) }}" alt="{{ translate('Seller Login Page Image') }}" class="img-fit h-100">
+                                <img src="https://img.freepik.com/free-photo/online-school-equipment-home_23-2149041148.jpg?w=740&t=st=1705923676~exp=1705924276~hmac=9aaabc301a5f438779bc1aee013339354b240f36fc7112d3e79b18f3caaef97c" alt="{{ translate('Customer Login Page Image') }}" class="img-fit h-100">
                             </div>
                 
                             <!-- Right Side -->
