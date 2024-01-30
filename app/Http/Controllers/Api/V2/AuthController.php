@@ -15,86 +15,237 @@ use Hash;
 use GeneaLabs\LaravelSocialiter\Facades\Socialiter;
 use Socialite;
 use App\Models\Cart;
+use App\Models\SmsLog;
 use App\Rules\Recaptcha;
 use App\Services\SocialRevoke;
-
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends Controller
 {
-    public function signup(Request $request)
-    {
-        $messages = array(
-            'name.required' => translate('Name is required'),
-            'email_or_phone.required' => $request->register_by == 'email' ? translate('Email is required') : translate('Phone is required'),
-            'email_or_phone.email' => translate('Email must be a valid email address'),
-            'email_or_phone.numeric' => translate('Phone must be a number.'),
-            'email_or_phone.unique' => $request->register_by == 'email' ? translate('The email has already been taken') : translate('The phone has already been taken'),
-            'password.required' => translate('Password is required'),
-            'password.confirmed' => translate('Password confirmation does not match'),
-            'password.min' => translate('Minimum 6 digits required for password')
-        );
-        $validator = Validator::make($request->all(), [
-            'name' => 'required',
-            'password' => 'required|min:6|confirmed',
-            // 'email_or_phone' => [
-            //     'required',
-            //     Rule::when($request->register_by === 'email', ['email', 'unique:users,email']),
-            //     Rule::when($request->register_by === 'phone', ['numeric', 'unique:users,phone']),
-            // ],
-            'g-recaptcha-response' => [
-                Rule::when(get_setting('google_recaptcha') == 1, ['required', new Recaptcha()], ['sometimes'])
-            ]
-        ], $messages);
+    // 1
+    // public function signup(Request $request)
+    // {
+    //     $messages = array(
+    //         'name.required' => translate('Name is required'),
+    //         // 'email_or_phone.required' => $request->register_by == 'email' ? translate('Email is required') : translate('Phone is required'),
+    //         'email_or_phone.email' => translate('Email must be a valid email address'),
+    //         'email_or_phone.numeric' => translate('Phone must be a number.'),
+    //         'email_or_phone.unique' => $request->register_by == 'email' ? translate('The email has already been taken') : translate('The phone has already been taken'),
+    //         'password.required' => translate('Password is required'),
+    //         'password.confirmed' => translate('Password confirmation does not match'),
+    //         'password.min' => translate('Minimum 6 digits required for password')
+    //     );
+    //     $validator = Validator::make($request->all(), [
+    //         'name' => 'required',
+    //         'password' => 'required|min:6|confirmed',
+    //         // 'email_or_phone' => [
+    //         //     'required',
+    //         //     Rule::when($request->register_by === 'email', ['email', 'unique:users,email']),
+    //         //     Rule::when($request->register_by === 'phone', ['numeric', 'unique:users,phone']),
+    //         // ],
+    //         'g-recaptcha-response' => [
+    //             Rule::when(get_setting('google_recaptcha') == 1, ['required', new Recaptcha()], ['sometimes'])
+    //         ]
+    //     ], $messages);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'result' => false,
-                'message' => $validator->errors()->all()
-            ]);
-        }
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'result' => false,
+    //             'message' => $validator->errors()->all()
+    //         ]);
+    //     }
 
-        $user = new User();
-        $user->name = $request->name;
-        if ($request->register_by == 'email') {
+    //     $user = new User();
+    //     $user->name = $request->name;
+    //     if ($request->register_by == 'email') {
 
-            $user->email = $request->email_or_phone;
-        }
-        if ($request->register_by == 'phone') {
-            $user->phone = $request->email_or_phone;
-        }
-        $user->password = bcrypt($request->password);
-        $user->verification_code = rand(100000, 999999);
-        $user->save();
+    //         $user->email = $request->email_or_phone;
+    //     }
+    //     if ($request->register_by == 'phone') {
+    //         $user->phone = $request->email_or_phone;
+    //     }
+    //     $user->password = bcrypt($request->password);
+    //     $user->verification_code = rand(100000, 999999);
+    //     $user->save();
 
 
-        $user->email_verified_at = null;
-        if ($user->email != null) {
-            if (BusinessSetting::where('type', 'email_verification')->first()->value != 1) {
-                $user->email_verified_at = date('Y-m-d H:m:s');
-            }
-        }
+    //     $user->email_verified_at = null;
+    //     if ($user->email != null) {
+    //         if (BusinessSetting::where('type', 'email_verification')->first()->value != 1) {
+    //             $user->email_verified_at = date('Y-m-d H:m:s');
+    //         }
+    //     }
 
-        if ($user->email_verified_at == null) {
-            if ($request->register_by == 'email') {
-                try {
-                    $user->notify(new AppEmailVerificationNotification());
-                } catch (\Exception $e) {
-                }
-            } else {
-                $otpController = new OTPVerificationController();
-                $otpController->send_code($user);
-            }
-        }
+    //     if ($user->email_verified_at == null) {
+    //         if ($request->register_by == 'email') {
+    //             try {
+    //                 $user->notify(new AppEmailVerificationNotification());
+    //             } catch (\Exception $e) {
+    //             }
+    //         } else {
+    //             $otpController = new OTPVerificationController();
+    //             $otpController->send_code($user);
+    //         }
+    //     }
 
-        $user->save();
-        //create token
-        $user->createToken('tokens')->plainTextToken;
+    //     $user->save();
+    //     //create token
+    //     $user->createToken('tokens')->plainTextToken;
 
-        return $this->loginSuccess($user);
+    //     return $this->loginSuccess($user);
+    // }
+    // 2
+    // public function signup(Request $request)
+    // {
+    //     $messages = array(
+    //         'name.required' => translate('Name is required'),
+    //         'email_or_phone.required' => $request->register_by == 'email' ? translate('Email is required') : translate('Phone is required'),
+    //         'email_or_phone.email' => translate('Email must be a valid email address'),
+    //         'email_or_phone.numeric' => translate('Phone must be a number.'),
+    //         'email_or_phone.unique' => $request->register_by == 'email' ? translate('The email has already been taken') : translate('The phone has already been taken'),
+    //         'password.required' => translate('Password is required'),
+    //         'password.confirmed' => translate('Password confirmation does not match'),
+    //         'password.min' => translate('Minimum 6 digits required for password')
+    //     );
+    //     $validator = Validator::make($request->all(), [
+    //         'name' => 'required',
+    //         'password' => 'required|min:6|confirmed',
+    //         // 'email_or_phone' => [
+    //         //     'required',
+    //         //     Rule::when($request->register_by === 'email', ['email', 'unique:users,email']),
+    //         //     Rule::when($request->register_by === 'phone', ['numeric', 'unique:users,phone']),
+    //         // ],
+    //         'g-recaptcha-response' => [
+    //             Rule::when(get_setting('google_recaptcha') == 1, ['required', new Recaptcha()], ['sometimes'])
+    //         ]
+    //     ], $messages);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'result' => false,
+    //             'message' => $validator->errors()->all()
+    //         ]);
+    //     }
+
+    //     $user = new User();
+    //     $user->name = $request->name;
+    //     if ($request->register_by == 'email') {
+
+    //         $user->email = $request->email_or_phone;
+    //     }
+    //     if ($request->register_by == 'phone') {
+    //         $user->phone = $request->email_or_phone;
+    //     }
+    //     $user->password = bcrypt($request->password);
+    //     $user->verification_code = rand(100000, 999999);
+    //     $user->save();
+
+
+    //     $user->email_verified_at = null;
+    //     if ($user->email != null) {
+    //         if (BusinessSetting::where('type', 'email_verification')->first()->value != 1) {
+    //             $user->email_verified_at = date('Y-m-d H:m:s');
+    //         }
+    //     }
+
+    //     if ($user->email_verified_at == null) {
+    //         if ($request->register_by == 'email') {
+    //             try {
+    //                 $user->notify(new AppEmailVerificationNotification());
+    //             } catch (\Exception $e) {
+    //             }
+    //         } 
+    //         // else {
+    //         //     $otpController = new OTPVerificationController();
+    //         //     $otpController->send_code($user);
+    //         // }
+    //     }
+
+    //     $user->save();
+    //     //create token
+    //     $user->createToken('tokens')->plainTextToken;
+
+    //     return $this->loginSuccess($user);
+    // }
+
+
+//red alert
+public function signup(Request $request)
+{
+    $messages = array(
+        'name.required' => translate('Name is required'),
+        'email_or_phone.required' => $request->register_by == 'email' ? translate('Email is required') : translate('Phone is required'),
+        'email_or_phone.email' => translate('Email must be a valid email address'),
+        'email_or_phone.numeric' => translate('Phone must be a number.'),
+        'email_or_phone.unique' => $request->register_by == 'email' ? translate('The email has already been taken') : translate('The phone has already been taken'),
+        'password.required' => translate('Password is required'),
+        'password.confirmed' => translate('Password confirmation does not match'),
+        'password.min' => translate('Minimum 6 digits required for password')
+    );
+
+    $validator = Validator::make($request->all(), [
+        'name' => 'required',
+        'password' => 'required|min:6|confirmed',
+        'g-recaptcha-response' => [
+            Rule::when(get_setting('google_recaptcha') == 1, ['required', new Recaptcha()], ['sometimes'])
+        ]
+    ], $messages);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'result' => false,
+            'message' => $validator->errors()->all()
+        ]);
     }
+
+    $user = new User();
+    $user->name = $request->name;
+
+    if ($request->register_by == 'email') {
+        $user->email = $request->email_or_phone;
+    } elseif ($request->register_by == 'phone') {
+        $user->phone = $request->email_or_phone;
+    }
+
+    $user->password = bcrypt($request->password);
+
+    // Generate a random OTP (adjust the range as needed)
+    $otp = rand(100000, 999999);
+    $user->verification_code = $otp;
+
+    // Send OTP via SMS (replace this with your actual SMS sending code)
+    $number = $user->phone; // Use the user's phone number
+    $url = "https://mshastra.com/sendurl.aspx"; // Replace with your actual SMS URL
+
+    $response = Http::get($url, [
+        'user' => 'playon24',
+        'pwd' => 'sesbheje',
+        'senderid' => '8809612440465',
+        'mobileno' => $number,
+        'msgtext' => 'Your OTP: ' . $otp, // Adjust the message as needed
+        'priority' => 'High',
+        'CountryCode' => '880',
+    ]);
+
+    SmsLog::create([
+        'from' => 'Registration/Forget',
+        'to' => $number,
+        'message' => 'Your OTP: ' . $otp, // Adjust the message as needed
+        'status' => $response->body(),
+        'sent_by' => "System"
+    ]);
+
+    $user->save();
+    $user->createToken('tokens')->plainTextToken;
+
+    return $this->loginSuccess($user);
+}
+
+//red alert
+
 
     public function resendCode()
     {
