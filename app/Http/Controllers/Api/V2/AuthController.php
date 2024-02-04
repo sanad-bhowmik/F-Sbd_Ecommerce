@@ -26,7 +26,7 @@ use Laravel\Sanctum\PersonalAccessToken;
 class AuthController extends Controller
 {
     // 1
-    // public function signup(Request $request)
+// public function signup(Request $request)
     // {
     //     $messages = array(
     //         'name.required' => translate('Name is required'),
@@ -96,9 +96,9 @@ class AuthController extends Controller
     //     $user->createToken('tokens')->plainTextToken;
 
     //     return $this->loginSuccess($user);
-    // }
+// }
     // 2
-    // public function signup(Request $request)
+// public function signup(Request $request)
     // {
     //     $messages = array(
     //         'name.required' => translate('Name is required'),
@@ -169,82 +169,81 @@ class AuthController extends Controller
     //     $user->createToken('tokens')->plainTextToken;
 
     //     return $this->loginSuccess($user);
-    // }
+// }
 
 
-//red alert
-public function signup(Request $request)
-{
-    $messages = array(
-        'name.required' => translate('Name is required'),
-        'email_or_phone.required' => $request->register_by == 'email' ? translate('Email is required') : translate('Phone is required'),
-        'email_or_phone.email' => translate('Email must be a valid email address'),
-        'email_or_phone.numeric' => translate('Phone must be a number.'),
-        'email_or_phone.unique' => $request->register_by == 'email' ? translate('The email has already been taken') : translate('The phone has already been taken'),
-        'password.required' => translate('Password is required'),
-        'password.confirmed' => translate('Password confirmation does not match'),
-        'password.min' => translate('Minimum 6 digits required for password')
-    );
+    //red alert
+    public function signup(Request $request)
+    {
+        $messages = array(
+            'name.required' => translate('Name is required'),
+            'email_or_phone.required' => $request->register_by == 'email' ? translate('Email is required') : translate('Phone is required'),
+            'email_or_phone.email' => translate('Email must be a valid email address'),
+            'email_or_phone.numeric' => translate('Phone must be a number.'),
+            'email_or_phone.unique' => $request->register_by == 'email' ? translate('The email has already been taken') : translate('The phone has already been taken'),
+            'password.required' => translate('Password is required'),
+            'password.confirmed' => translate('Password confirmation does not match'),
+            'password.min' => translate('Minimum 6 digits required for password')
+        );
 
-    $validator = Validator::make($request->all(), [
-        'name' => 'required',
-        'password' => 'required|min:6|confirmed',
-        'g-recaptcha-response' => [
-            Rule::when(get_setting('google_recaptcha') == 1, ['required', new Recaptcha()], ['sometimes'])
-        ]
-    ], $messages);
+        $validator = Validator::make($request->all(), [
+            'name' => 'required',
+            'password' => 'required|min:6|confirmed',
+            'g-recaptcha-response' => [
+                Rule::when(get_setting('google_recaptcha') == 1, ['required', new Recaptcha()], ['sometimes'])
+            ]
+        ], $messages);
 
-    if ($validator->fails()) {
-        return response()->json([
-            'result' => false,
-            'message' => $validator->errors()->all()
+        if ($validator->fails()) {
+            return response()->json([
+                'result' => false,
+                'message' => $validator->errors()->all()
+            ]);
+        }
+
+        $user = new User();
+        $user->name = $request->name;
+
+        if ($request->register_by == 'email') {
+            $user->email = $request->email_or_phone;
+        } elseif ($request->register_by == 'phone') {
+            $user->phone = $request->email_or_phone;
+        }
+
+        $user->password = bcrypt($request->password);
+
+        // Generate a random OTP (adjust the range as needed)
+        $otp = rand(100000, 999999);
+        $user->verification_code = $otp;
+
+        $number = $user->phone; // Use the user's phone number
+        $url = "https://mshastra.com/sendurl.aspx";
+
+        $response = Http::get($url, [
+            'user' => 'playon24',
+            'pwd' => 'sesbheje',
+            'senderid' => '8809612440465',
+            'mobileno' => $number,
+            'msgtext' => 'Your OTP: ' . $otp, 
+            'priority' => 'High',
+            'CountryCode' => '880',
         ]);
+
+        SmsLog::create([
+            'from' => 'Registration/Forget',
+            'to' => $number,
+            'message' => 'Your OTP: ' . $otp, 
+            'status' => $response->body(),
+            'sent_by' => "System"
+        ]);
+
+        $user->save();
+        $user->createToken('tokens')->plainTextToken;
+
+        return $this->loginSuccess($user);
     }
 
-    $user = new User();
-    $user->name = $request->name;
-
-    if ($request->register_by == 'email') {
-        $user->email = $request->email_or_phone;
-    } elseif ($request->register_by == 'phone') {
-        $user->phone = $request->email_or_phone;
-    }
-
-    $user->password = bcrypt($request->password);
-
-    // Generate a random OTP (adjust the range as needed)
-    $otp = rand(100000, 999999);
-    $user->verification_code = $otp;
-
-    // Send OTP via SMS (replace this with your actual SMS sending code)
-    $number = $user->phone; // Use the user's phone number
-    $url = "https://mshastra.com/sendurl.aspx"; // Replace with your actual SMS URL
-
-    $response = Http::get($url, [
-        'user' => 'playon24',
-        'pwd' => 'sesbheje',
-        'senderid' => '8809612440465',
-        'mobileno' => $number,
-        'msgtext' => 'Your OTP: ' . $otp, // Adjust the message as needed
-        'priority' => 'High',
-        'CountryCode' => '880',
-    ]);
-
-    SmsLog::create([
-        'from' => 'Registration/Forget',
-        'to' => $number,
-        'message' => 'Your OTP: ' . $otp, // Adjust the message as needed
-        'status' => $response->body(),
-        'sent_by' => "System"
-    ]);
-
-    $user->save();
-    $user->createToken('tokens')->plainTextToken;
-
-    return $this->loginSuccess($user);
-}
-
-//red alert
+    //red alert
 
 
     public function resendCode()
@@ -366,62 +365,62 @@ public function signup(Request $request)
     //         return response()->json(['result' => false, 'message' => translate('User not found'), 'user' => null], 401);
     //     }
     // }
-    
-public function login(Request $request)
-{
-    $messages = array(
-        'password.required' => translate('Password is required'),
-    );
 
-    $validator = Validator::make($request->all(), [
-        'password' => 'required',
-        'login_by' => 'required',
-        // 'email' => [
-        //     Rule::when($request->login_by === 'email', ['email', 'required']),
-        //     Rule::when($request->login_by === 'phone', ['numeric', 'required']),
-        // ]
-    ], $messages);
+    public function login(Request $request)
+    {
+        $messages = array(
+            'password.required' => translate('Password is required'),
+        );
 
-    if ($validator->fails()) {
-        return response()->json([
-            'result' => false,
-            'message' => $validator->errors()->all()
-        ]);
-    }
+        $validator = Validator::make($request->all(), [
+            'password' => 'required',
+            'login_by' => 'required',
+            // 'email' => [
+            //     Rule::when($request->login_by === 'email', ['email', 'required']),
+            //     Rule::when($request->login_by === 'phone', ['numeric', 'required']),
+            // ]
+        ], $messages);
 
-    $userTypeConditions = [
-        'delivery_boy' => ['delivery_boy'],
-        'seller' => ['seller'],
-        'customer' => ['customer'],
-    ];
+        if ($validator->fails()) {
+            return response()->json([
+                'result' => false,
+                'message' => $validator->errors()->all()
+            ]);
+        }
 
-    $userTypeCondition = $request->has('user_type') ? $request->user_type : 'customer';
+        $userTypeConditions = [
+            'delivery_boy' => ['delivery_boy'],
+            'seller' => ['seller'],
+            'customer' => ['customer'],
+        ];
 
-    $user = User::whereIn('user_type', $userTypeConditions[$userTypeCondition])
-        ->where(function ($query) use ($request) {
-            $query->where('email', $request->email)
-                ->orWhere('phone', $request->email);
-        })
-        ->first();
+        $userTypeCondition = $request->has('user_type') ? $request->user_type : 'customer';
 
-    if ($user != null) {
-        if (!$user->banned) {
-            if (Hash::check($request->password, $user->password)) {
-                // Uncomment the email verification check if needed
-                // if ($user->email_verified_at == null) {
-                //     return response()->json(['result' => false, 'message' => translate('Please verify your account'), 'user' => null], 401);
-                // }
-                return $this->loginSuccess($user);
+        $user = User::whereIn('user_type', $userTypeConditions[$userTypeCondition])
+            ->where(function ($query) use ($request) {
+                $query->where('email', $request->email)
+                    ->orWhere('phone', $request->email);
+            })
+            ->first();
+
+        if ($user != null) {
+            if (!$user->banned) {
+                if (Hash::check($request->password, $user->password)) {
+                    // Uncomment the email verification check if needed
+                    // if ($user->email_verified_at == null) {
+                    //     return response()->json(['result' => false, 'message' => translate('Please verify your account'), 'user' => null], 401);
+                    // }
+                    return $this->loginSuccess($user);
+                } else {
+                    return response()->json(['result' => false, 'message' => translate('Unauthorized'), 'user' => null], 401);
+                }
             } else {
-                return response()->json(['result' => false, 'message' => translate('Unauthorized'), 'user' => null], 401);
+                return response()->json(['result' => false, 'message' => translate('User is banned'), 'user' => null], 401);
             }
         } else {
-            return response()->json(['result' => false, 'message' => translate('User is banned'), 'user' => null], 401);
+            return response()->json(['result' => false, 'message' => translate('User not found'), 'user' => null], 401);
         }
-    } else {
-        return response()->json(['result' => false, 'message' => translate('User not found'), 'user' => null], 401);
     }
-}
 
 
     public function user(Request $request)
