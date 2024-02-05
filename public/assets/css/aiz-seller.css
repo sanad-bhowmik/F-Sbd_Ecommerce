@@ -19,7 +19,7 @@ use custom-style.css
     --white: #fff;
     --gray: #6c757d;
     --gray-dark: #343a40;
-    --primary: #2E294E;
+    --primary: #12372A;
     --hov-primary: #2E294E;
     --soft-primary: rgba(233, 233, 240, 1);
     --secondary: #8f97ab;
@@ -500,7 +500,7 @@ fixed-bottom 1030*/
 .hov-bg-white:hover { background-color: #fff !important; }
 
 .bg-grad-1 { background-color: #eb4786; background-image: linear-gradient(315deg, #eb4786 0%, #b854a6 74%); }
-.bg-grad-2 { background-color: #875fc0; background-image: linear-gradient(315deg, #875fc0 0%, #5346ba 74%); }
+.bg-grad-2 { background-color: red; background-image: linear-gradient(100deg, rgba(2,0,36,1) 0%, rgba(9,9,121,1) 35%, rgba(0,212,255,1) 100%);}
 .bg-grad-3 { background-color: #47c5f4; background-image: linear-gradient(315deg, #47c5f4 0%, #6791d9 74%); }
 .bg-grad-4 { background-color: #ffb72c; background-image: linear-gradient(315deg, #ffb72c 0%, #f57f59 74%); }
 

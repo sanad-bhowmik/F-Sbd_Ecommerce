@@ -25,50 +25,72 @@
                             <!-- Login form -->
                             <div class="pt-3">
                                 <div class="">
-                                    <form class="form-default" role="form" action="{{ route('login') }}" method="POST">
-                                        @csrf
-                                        
-                                        <!-- Email -->
-                                        <div class="form-group">
-                                            <label for="email" class="fs-12 fw-700 text-soft-dark">{{  translate('Email') }}</label>
-                                            <input type="email" class="form-control{{ $errors->has('email') ? ' is-invalid' : '' }} rounded-0" value="{{ old('email') }}" placeholder="{{  translate('johndoe@example.com') }}" name="email" id="email" autocomplete="off">
-                                            @if ($errors->has('email'))
-                                                <span class="invalid-feedback" role="alert">
-                                                    <strong>{{ $errors->first('email') }}</strong>
-                                                </span>
+                                <form class="form-default" role="form" action="{{ route('login') }}" method="POST">
+                                            @csrf
+                                            
+                                            <!-- Email or Phone -->
+                                            @if (addon_is_activated('otp_system'))
+                                                <div class="form-group phone-form-group mb-1">
+                                                    <label for="phone" class="fs-12 fw-700 text-soft-dark">{{  translate('Phone') }}</label>
+                                                    <input type="tel" id="phone-code" class="form-control{{ $errors->has('phone') ? ' is-invalid' : '' }} rounded-0" value="{{ old('phone') }}" placeholder="" name="phone" autocomplete="off">
+                                                </div>
+
+                                                <input type="hidden" name="country_code" value="">
+                                                
+                                                <div class="form-group email-form-group mb-1 d-none">
+                                                    <label for="email" class="fs-12 fw-700 text-soft-dark">{{  translate('Email') }}</label>
+                                                    <input type="email" class="form-control rounded-0 {{ $errors->has('email') ? ' is-invalid' : '' }}" value="{{ old('email') }}" placeholder="{{  translate('johndoe@example.com') }}" name="email" id="email" autocomplete="off">
+                                                    @if ($errors->has('email'))
+                                                        <span class="invalid-feedback" role="alert">
+                                                            <strong>{{ $errors->first('email') }}</strong>
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                                
+                                                <div class="form-group text-right">
+                                                    <button class="btn btn-link p-0 text-primary fs-12 fw-400" type="button" onclick="toggleEmailPhone(this)"><i>*{{ translate('Use Email Instead') }}</i></button>
+                                                </div>
+                                            @else
+                                                <div class="form-group">
+                                                    <label for="phone" class="fs-12 fw-700 text-soft-dark">{{  translate('phone') }}</label>
+                                                    <input type="phone" class="form-control{{ $errors->has('phone') ? ' is-invalid' : '' }} rounded-0" value="{{ old('phone') }}" placeholder="{{  translate('johndoe@example.com') }}" name="phone" id="phone" autocomplete="off">
+                                                    @if ($errors->has('email'))
+                                                        <span class="invalid-feedback" role="alert">
+                                                            <strong>{{ $errors->first('email') }}</strong>
+                                                        </span>
+                                                    @endif
+                                                </div>
                                             @endif
-                                        </div>
-                                            
-                                        <!-- password -->
-                                        <div class="form-group">
-                                            <label for="password" class="fs-12 fw-700 text-soft-dark">{{  translate('Password') }}</label>
-                                            <div class="position-relative">
-                                                <input type="password" class="form-control rounded-0 {{ $errors->has('password') ? ' is-invalid' : '' }}" placeholder="{{ translate('Password')}}" name="password" id="password">
-                                                <i class="password-toggle las la-2x la-eye"></i>
+                                                
+                                            <!-- password -->
+                                            <div class="form-group">
+                                                <label for="password" class="fs-12 fw-700 text-soft-dark">{{  translate('Password') }}</label>
+                                                <div class="position-relative">
+                                                    <input type="password" class="form-control rounded-0 {{ $errors->has('password') ? ' is-invalid' : '' }}" placeholder="{{ translate('Password')}}" name="password" id="password">
+                                                    <i class="password-toggle las la-2x la-eye"></i>
+                                                </div>
                                             </div>
-                                        </div>
 
-                                        <div class="row mb-2">
-                                            <!-- Remember Me -->
-                                            <div class="col-6">
-                                                <label class="aiz-checkbox">
-                                                    <input type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }}>
-                                                    <span class="has-transition fs-12 fw-400 text-gray-dark hov-text-primary">{{  translate('Remember Me') }}</span>
-                                                    <span class="aiz-square-check"></span>
-                                                </label>
+                                            <div class="row mb-2">
+                                                <!-- Remember Me -->
+                                                <div class="col-6">
+                                                    <label class="aiz-checkbox">
+                                                        <input type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }}>
+                                                        <span class="has-transition fs-12 fw-400 text-gray-dark hov-text-primary">{{  translate('Remember Me') }}</span>
+                                                        <span class="aiz-square-check"></span>
+                                                    </label>
+                                                </div>
+                                                <!-- Forgot password -->
+                                                <div class="col-6 text-right">
+                                                    <a href="{{ route('password.request') }}" class="text-reset fs-12 fw-400 text-gray-dark hov-text-primary"><u>{{ translate('Forgot password?')}}</u></a>
+                                                </div>
                                             </div>
-                                            
-                                            <!-- Forgot password -->
-                                            <div class="col-6 text-right">
-                                                <a href="{{ route('password.request') }}" class="text-reset fs-12 fw-400 text-gray-dark hov-text-primary"><u>{{ translate('Forgot password?')}}</u></a>
-                                            </div>
-                                        </div>
 
-                                        <!-- Submit Button -->
-                                        <div class="mb-4 mt-4">
-                                            <button type="submit" class="btn btn-primary btn-block fw-700 fs-14 rounded-0">{{  translate('Login') }}</button>
-                                        </div>
-                                    </form>
+                                            <!-- Submit Button -->
+                                            <div class="mb-4 mt-4">
+                                                <button type="submit" class="btn btn-primary btn-block fw-700 fs-14 rounded-0">{{  translate('Login') }}</button>
+                                            </div>
+                                        </form>
 
                                     <!-- DEMO MODE -->
                                     @if (env("DEMO_MODE") == "On")
