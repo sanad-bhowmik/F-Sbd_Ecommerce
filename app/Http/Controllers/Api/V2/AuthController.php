@@ -213,15 +213,16 @@ class AuthController extends Controller
         $user->password = bcrypt($request->password);
 
         // Generate a random OTP (adjust the range as needed)
-        $otp = rand(100000, 999999);
+        $otp = rand(1000, 9999);
         $user->verification_code = $otp;
 
         $number = $user->phone; // Use the user's phone number
-        $url = "https://mshastra.com/sendurl.aspx";
+        // $url = "https://mshastra.com/sendurl.aspx";
+        $url = "https://sms.songbirdtelecom.com";
 
         $response = Http::get($url, [
             'user' => 'playon24',
-            'pwd' => 'sesbheje',
+            'pwd' => 'admin@123',
             'senderid' => '8809612440465',
             'mobileno' => $number,
             'msgtext' => 'Your OTP: ' . $otp, 

@@ -1,6 +1,35 @@
 @extends('seller.layouts.app')
 
 @section('panel_content')
+
+<style>
+    #card1:hover {
+    background-color: red;
+    background-image: linear-gradient(-50deg, rgba(2,0,36,1) 0%, rgba(9,9,121,1) 35%, rgba(0,212,255,1) 100%);
+}
+    #card2:hover {
+    background-color: red;
+    background-image: linear-gradient(-50deg, rgba(2,0,36,1) 0%, rgba(9,9,121,1) 35%, rgba(0,212,255,1) 100%);
+}
+    #card3:hover {
+    background-color: red;
+    background-image: linear-gradient(-50deg, rgba(2,0,36,1) 0%, rgba(9,9,121,1) 35%, rgba(0,212,255,1) 100%);
+}
+    #card4:hover {
+    background-color: red;
+    background-image: linear-gradient(-50deg, rgba(2,0,36,1) 0%, rgba(9,9,121,1) 35%, rgba(0,212,255,1) 100%);
+}
+    #card5:hover {
+    background-color: red;
+    background-image: linear-gradient(-50deg, rgba(2,0,36,1) 0%, rgba(9,9,121,1) 35%, rgba(0,212,255,1) 100%);
+}
+    #card6:hover {
+    background-color: red;
+    background-image: linear-gradient(-50deg, rgba(2,0,36,1) 0%, rgba(9,9,121,1) 35%, rgba(0,212,255,1) 100%);
+}
+
+
+</style>
 <div class="aiz-titlebar mt-2 mb-4">
     <div class="row align-items-center">
         <div class="col-md-6">
@@ -10,8 +39,8 @@
 </div>
 
 <div class="row">
-    <a href="https://fnsbd.shop/seller/products" class="col-sm-6 col-md-4 col-xxl-3" title="Click For Products">
-        <div class="card shadow-none mb-4 bg-primary py-4 bg-grad-2 text-white rounded-lg mb-4 overflow-hidden">
+    <a href="https://www.amaderbazar.net/seller/products" class="col-sm-6 col-md-4 col-xxl-3" title="Click For Products">
+       <div class="card shadow-none mb-4 bg-primary py-4 bg-grad-2 text-white rounded-lg mb-4 overflow-hidden" id="card1">
             <div class="card-body">
                 <div class="row align-items-center">
                     <div class="col">
@@ -33,8 +62,8 @@
             </div>
         </div>
     </a>
-    <a href="https://fnsbd.shop/seller/conversations" class="col-sm-6 col-md-4 col-xxl-3" title="Click For Message">
-        <div class="card shadow-none mb-4 bg-primary py-4 bg-grad-2 text-white rounded-lg mb-4 overflow-hidden">
+    <a href="" class="col-sm-6 col-md-4 col-xxl-3" title="Click For Sales">
+       <div class="card shadow-none mb-4 bg-primary py-4 bg-grad-2 text-white rounded-lg mb-4 overflow-hidden" id="card2">
             <div class="card-body">
                 <div class="row align-items-center">
                     <div class="col">
@@ -70,8 +99,8 @@
             </div>
         </div>
     </a>
-    <a href="https://fnsbd.shop/seller/conversations" class="col-sm-6 col-md-4 col-xxl-3" title="Click For Message">
-        <div class="card shadow-none mb-4 bg-primary py-4 bg-grad-2 text-white rounded-lg mb-4 overflow-hidden">
+    <a href="https://www.amaderbazar.net/seller/conversations" class="col-sm-6 col-md-4 col-xxl-3" title="Click For Message">
+        <div class="card shadow-none mb-4 bg-primary py-4 bg-grad-2 text-white rounded-lg mb-4 overflow-hidden" id="card3">
             <div class="card-body">
                 <div class="row align-items-center">
                     <div class="col">
@@ -94,8 +123,8 @@
             </div>
         </div>
     </a>
-    <a href="https://fnsbd.shop/seller/orders" class="col-sm-6 col-md-4 col-xxl-3" title="Click For Total Orders">
-        <div class="card shadow-none mb-4 bg-primary py-4 bg-grad-2 text-white rounded-lg mb-4 overflow-hidden">
+    <a href="https://www.amaderbazar.net/seller/orders" class="col-sm-6 col-md-4 col-xxl-3" title="Click For Total Orders">
+        <div class="card shadow-none mb-4 bg-primary py-4 bg-grad-2 text-white rounded-lg mb-4 overflow-hidden" id="card4">
             <div class="card-body">
                 <div class="row align-items-center">
                     <div class="col">
@@ -129,8 +158,8 @@
             </div>
         </div>
     </a>
-    <a href="https://fnsbd.shop/seller/orders" class="col-sm-6 col-md-4 col-xxl-3" title="Click For New Orders">
-        <div class="card shadow-none mb-4 bg-primary py-4 bg-grad-2 text-white rounded-lg mb-4 overflow-hidden">
+    <a href="https://www.amaderbazar.net/seller/orders" class="col-sm-6 col-md-4 col-xxl-3" title="Click For New Orders">
+        <div class="card shadow-none mb-4 bg-primary py-4 bg-grad-2 text-white rounded-lg mb-4 overflow-hidden" id="card5">
             <div class="card-body">
                 <div class="row align-items-center">
                     <div class="col">
@@ -159,8 +188,8 @@
             </div>
         </div>
     </a>
-    <a href="https://fnsbd.shop/seller/orders" class="col-sm-6 col-md-4 col-xxl-3 " title="Click For Cancel Orders">
-        <div class="card shadow-none mb-4 bg-primary py-4 bg-grad-2 text-white rounded-lg mb-4 overflow-hidden">
+    <a  href="https://www.amaderbazar.net/seller/orders" class="col-sm-6 col-md-4 col-xxl-3" title="Click For Cancel Orders">
+        <div class="card shadow-none mb-4 bg-primary py-4 bg-grad-2 text-white rounded-lg mb-4 overflow-hidden" id="card6">
             <div class="card-body">
                 <div class="row align-items-center">
                     <div class="col">
@@ -195,22 +224,6 @@
             </div>
         </div>
     </a>
-    <!-- <div class="col-6">
-        <div class="bg-grad-2 text-white rounded-lg mb-4 overflow-hidden">
-            <div class="px-3 pt-3">
-                <div class="opacity-50">
-                    <span class="fs-12 d-block">{{ translate('Total') }}</span>
-                    {{ translate('Customer') }}
-                </div>
-                <div class="h3 fw-700 mb-3">
-                    {{ \App\Models\User::where('user_type', 'customer')->where('email_verified_at', '!=', null)->count() }}
-                </div>
-            </div>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
-                <path fill="rgba(255,255,255,0.3)" fill-opacity="1" d="M0,128L34.3,112C68.6,96,137,64,206,96C274.3,128,343,224,411,250.7C480,277,549,235,617,213.3C685.7,192,754,192,823,181.3C891.4,171,960,149,1029,117.3C1097.1,85,1166,43,1234,58.7C1302.9,75,1371,149,1406,186.7L1440,224L1440,320L1405.7,320C1371.4,320,1303,320,1234,320C1165.7,320,1097,320,1029,320C960,320,891,320,823,320C754.3,320,686,320,617,320C548.6,320,480,320,411,320C342.9,320,274,320,206,320C137.1,320,69,320,34,320L0,320Z"></path>
-            </svg>
-        </div>
-    </div> -->
 </div>
 
 <div class="row">
@@ -258,7 +271,7 @@
     </div>
     <div class="col-sm-6 col-md-6 col-lg-3 mb-4">
         <div class="card shadow-none h-450px mb-0 h-100">
-            <div class="card-body">
+            <div class="card-body" style="box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;">
                 <div class="card-title text-primary fs-16 fw-600">
                     {{ translate('Category wise product count') }}
                 </div>
@@ -280,7 +293,7 @@
     </div>
     <div class="col-sm-6 col-md-6 col-lg-3 mb-4">
         <div class="card h-450px mb-0 h-100">
-            <div class="card-body">
+            <div class="card-body" style="box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;">
                 <div class="card-title text-primary fs-16 fw-600">
                     {{ translate('Orders') }}
                     <p class="small text-muted mb-0">
@@ -426,7 +439,7 @@
             </div>
         </div>
         @endif
-        <div class="card mb-0 @if (addon_is_activated('seller_subscription')) px-4 py-5 @else p-5 h-100 @endif d-flex align-items-center justify-content-center">
+        <div class="card mb-0 @if (addon_is_activated('seller_subscription')) px-4 py-5 @else p-5 h-100 @endif d-flex align-items-center justify-content-center" style="box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;">
             @if (Auth::user()->shop->verification_status == 0)
             <div class="my-n4 py-1 text-center">
                 <img src="{{ static_asset('assets/img/non_verified.png') }}" alt="" class="w-xxl-130px w-90px d-block">
