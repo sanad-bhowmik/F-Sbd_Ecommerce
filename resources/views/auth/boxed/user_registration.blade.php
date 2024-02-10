@@ -1,6 +1,13 @@
 @extends('auth.layouts.authentication')
 
 @section('content')
+
+
+<style>
+    .hidden {
+        display: none;
+    }
+</style>
 <div class="aiz-main-wrapper d-flex flex-column justify-content-md-center bg-white">
     <section class="bg-white overflow-hidden">
         <div class="row">
@@ -128,8 +135,24 @@
 
                                         <!-- Submit Button -->
                                         <div class="mb-4 mt-4">
-                                            <button type="submit" class="btn btn-primary btn-block fw-600 rounded-0">{{ translate('Create Account') }}</button>
+                                            <button class="btn btn-primary btn-block fw-600 rounded-0" id="createAccountBtn">{{ translate('Create Account') }}</button>
                                         </div>
+
+                                        <!-- OTP Check -->
+                                        <div id="otpDiv" class="hidden">
+                                            <div class="form-group">
+                                                <label for="OTP" class="fs-12 fw-700 text-soft-dark">{{ translate('OTP') }}</label>
+                                                <div class="position-relative">
+                                                    <input type="text" class="form-control rounded-0" placeholder="{{  translate('OTP') }}" name="OTP">
+                                                </div>
+                                            </div>
+
+                                            <!-- Submit Button -->
+                                            <div class="mb-4 mt-4">
+                                                <button type="submit" class="btn btn-primary btn-block fw-600 rounded-0">{{ translate('Confirm OTP') }}</button>
+                                            </div>
+                                        </div>
+                                        <!-- OTP Check -->
                                     </form>
 
                                     <!-- Social Login -->
@@ -195,6 +218,7 @@
 @section('script')
 @if(get_setting('google_recaptcha') == 1)
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
 @endif
 
 <script type="text/javascript">
@@ -215,5 +239,16 @@
         });
     });
     @endif
+</script>
+<script>
+    var createAccountBtn = document.getElementById("createAccountBtn");
+
+    var otpDiv = document.getElementById("otpDiv");
+
+    createAccountBtn.addEventListener("click", function(event) {
+        event.preventDefault();
+
+        otpDiv.classList.remove("hidden");
+    });
 </script>
 @endsection

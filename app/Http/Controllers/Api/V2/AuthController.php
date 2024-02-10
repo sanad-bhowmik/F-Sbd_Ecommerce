@@ -26,7 +26,7 @@ use Laravel\Sanctum\PersonalAccessToken;
 class AuthController extends Controller
 {
     // 1
-// public function signup(Request $request)
+    // public function signup(Request $request)
     // {
     //     $messages = array(
     //         'name.required' => translate('Name is required'),
@@ -96,9 +96,9 @@ class AuthController extends Controller
     //     $user->createToken('tokens')->plainTextToken;
 
     //     return $this->loginSuccess($user);
-// }
+    // }
     // 2
-// public function signup(Request $request)
+    // public function signup(Request $request)
     // {
     //     $messages = array(
     //         'name.required' => translate('Name is required'),
@@ -169,7 +169,7 @@ class AuthController extends Controller
     //     $user->createToken('tokens')->plainTextToken;
 
     //     return $this->loginSuccess($user);
-// }
+    // }
 
 
     //red alert
@@ -212,20 +212,21 @@ class AuthController extends Controller
 
         $user->password = bcrypt($request->password);
 
-        // Generate a random OTP (adjust the range as needed)
+
         $otp = rand(1000, 9999);
         $user->verification_code = $otp;
 
+
         $number = $user->phone; // Use the user's phone number
-        // $url = "https://mshastra.com/sendurl.aspx";
         $url = "https://sms.songbirdtelecom.com";
+        //   $url = "https://mshastra.com/sendurl.aspx";
 
         $response = Http::get($url, [
             'user' => 'playon24',
             'pwd' => 'admin@123',
             'senderid' => '8809612440465',
             'mobileno' => $number,
-            'msgtext' => 'Your OTP: ' . $otp, 
+            'msgtext' => 'Your OTP: ' . $otp,
             'priority' => 'High',
             'CountryCode' => '880',
         ]);
@@ -233,7 +234,7 @@ class AuthController extends Controller
         SmsLog::create([
             'from' => 'Registration/Forget',
             'to' => $number,
-            'message' => 'Your OTP: ' . $otp, 
+            'message' => 'Your OTP: ' . $otp,
             'status' => $response->body(),
             'sent_by' => "System"
         ]);

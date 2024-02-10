@@ -140,7 +140,7 @@ class RegisterController extends Controller
         $user = $this->create($request->all());
 
         // Add the following lines to set the phone attribute
-        $user->phone = x$request->country_code . $request->phone;
+        $user->phone = $request->country_code . $request->phone;
         $user->save();
 
         $this->guard()->login($user);
