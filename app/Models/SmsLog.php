@@ -8,7 +8,6 @@ class SmsLog extends Model
 {
     protected $table = 'sms_logs';
 
-    protected $fillable = ['from', 'to', 'message', 'status', 'sent_by'];
+    protected $fillable = ['from', 'to', 'message', 'status', 'sent_by','otp'];
 
-    // Other model properties and methods...
 }

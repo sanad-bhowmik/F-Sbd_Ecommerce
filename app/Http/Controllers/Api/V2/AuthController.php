@@ -204,36 +204,32 @@ class AuthController extends Controller
         $user = new User();
         $user->name = $request->name;
 
-        if ($request->register_by == 'email') {
-            $user->email = $request->email_or_phone;
-        } elseif ($request->register_by == 'phone') {
+        if ($request->register_by == 'phone') {
             $user->phone = $request->email_or_phone;
+        } else {
+            $user->email = $request->email_or_phone;
         }
 
         $user->password = bcrypt($request->password);
 
-
         $otp = rand(1000, 9999);
         $user->verification_code = $otp;
 
-
-        $number = $user->phone; // Use the user's phone number
-        $url = "https://sms.songbirdtelecom.com";
-        //   $url = "https://mshastra.com/sendurl.aspx";
+        $number = $user->phone;
+        $url = "103.53.84.15:8746/sendtext";
 
         $response = Http::get($url, [
-            'user' => 'playon24',
-            'pwd' => 'admin@123',
-            'senderid' => '8809612440465',
+            'apikey' => 'dfbd6568d15577db',
+            'secretkey' => '61784eda',
+            'callerID' => '8809612444767',
             'mobileno' => $number,
             'msgtext' => 'Your OTP: ' . $otp,
-            'priority' => 'High',
-            'CountryCode' => '880',
         ]);
 
         SmsLog::create([
             'from' => 'Registration/Forget',
             'to' => $number,
+            'otp' => $otp,
             'message' => 'Your OTP: ' . $otp,
             'status' => $response->body(),
             'sent_by' => "System"
