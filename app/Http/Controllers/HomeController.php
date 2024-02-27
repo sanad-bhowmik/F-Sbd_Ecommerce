@@ -136,7 +136,7 @@ class HomeController extends Controller
         return view('auth.' . get_setting('authentication_layout_select') . '.user_registration');
     }
 
-    
+
     public function sendOTP(Request $request)
     {
         $number = $request->phone;
@@ -164,7 +164,31 @@ class HomeController extends Controller
 
         return response()->json(['success' => true]);
     }
+    
+    public function verifyOTP(Request $request)
+    {
+        $enteredOTP = $request->input('OTP');
+        $storedOTP = $request->session()->get('otp');
 
+        if ($enteredOTP == $storedOTP) {
+            $user = User::create([
+                'name' => $request->input('name'),
+                'email' => $request->input('email'),
+                'phone' => $request->input('phone'),
+                'password' => bcrypt($request->input('password')),
+            ]);
+
+            // If the user is successfully created, log them in
+            if ($user) {
+                auth()->login($user);
+                return response()->json(['success' => true, 'message' => 'Registration successful']);
+            } else {
+                return response()->json(['success' => false, 'message' => 'Failed to create user']);
+            }
+        } else {
+            return response()->json(['success' => false, 'message' => 'Invalid OTP. Please try again.']);
+        }
+    }
 
     public function cart_login(Request $request)
     {

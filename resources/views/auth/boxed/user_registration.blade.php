@@ -284,6 +284,7 @@
     });
     @endif
 </script>
+<!-- OTP Send -->
 <script>
     document.getElementById("createAccountBtn").addEventListener("click", function(event) {
         event.preventDefault();
@@ -319,4 +320,43 @@
         });
     });
 </script>
+<!-- OTP Send -->
+<!-- otp Verification -->
+<script>
+    document.getElementById("reg-form").addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        var nameInput = document.querySelector('input[name="name"]').value;
+        var emailInput = document.querySelector('input[name="email"]').value;
+        var phoneInput = document.querySelector('input[name="phone"]').value;
+        var passwordInput = document.querySelector('input[name="password"]').value;
+        var otpInput = document.querySelector('input[name="OTP"]').value;
+
+        var formData = {
+            name: nameInput,
+            email: emailInput,
+            phone: phoneInput,
+            password: passwordInput,
+            OTP: otpInput,
+            _token: '{{ csrf_token() }}'
+        };
+
+        $.ajax({
+            url: '{{ route("verify-otp") }}',
+            type: 'POST',
+            data: formData,
+            success: function(response) {
+                if (response.success) {
+                    window.location.href = 'https://nobotexmart.com/'; 
+                } else {
+                    alert(response.message); 
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Failed to verify OTP');
+            }
+        });
+    });
+</script>
+<!-- otp Verification -->
 @endsection
