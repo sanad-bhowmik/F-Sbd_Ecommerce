@@ -8,17 +8,19 @@ use Illuminate\Support\Facades\Route;
 Route::group(['prefix' => 'v2/auth', 'middleware' => ['app_language']], function () {
     Route::post('login', 'App\Http\Controllers\Api\V2\AuthController@login');
     Route::post('signup', 'App\Http\Controllers\Api\V2\AuthController@signup');
+
     Route::post('social-login', 'App\Http\Controllers\Api\V2\AuthController@socialLogin');
     Route::post('password/forget_request', 'App\Http\Controllers\Api\V2\PasswordResetController@forgetRequest');
     Route::post('password/confirm_reset', 'App\Http\Controllers\Api\V2\PasswordResetController@confirmReset');
     Route::post('password/resend_code', 'App\Http\Controllers\Api\V2\PasswordResetController@resendCode');
     Route::middleware('auth:sanctum')->group(function () {
+        Route::post('confirm_code', 'App\Http\Controllers\Api\V2\AuthController@confirmCode');
         Route::get('logout', 'App\Http\Controllers\Api\V2\AuthController@logout');
         Route::get('account-deletion', 'App\Http\Controllers\Api\V2\AuthController@account_deletion');
         Route::get('user', 'App\Http\Controllers\Api\V2\AuthController@user');
         Route::get('resend_code', 'App\Http\Controllers\Api\V2\AuthController@resendCode');
-        Route::post('confirm_code', 'App\Http\Controllers\Api\V2\AuthController@confirmCode');
     });
+
 
     Route::post('info', 'App\Http\Controllers\Api\V2\AuthController@getUserInfoByAccessToken');
 });
@@ -315,8 +317,9 @@ Route::group(['prefix' => 'v2', 'middleware' => ['app_language']], function () {
     Route::any('paytm/payment/pay', 'App\Http\Controllers\Api\V2\PaytmController@pay')->name('api.paytm.pay');
     Route::get('instamojo/pay', 'App\Http\Controllers\Api\V2\InstamojoController@pay');
 
-
     Route::get('payfast/initiate', 'App\Http\Controllers\Api\V2\PayfastController@pay');
+
+    Route::get('/myfatoorah/initiate', 'App\Http\Controllers\Api\V2\MyfatoorahController@pay');
 
     Route::post('offline/payment/submit', 'App\Http\Controllers\Api\V2\OfflinePaymentController@submit')->name('api.offline.payment.submit');
 
@@ -373,6 +376,12 @@ Route::group(['prefix' => 'v2', 'middleware' => ['app_language']], function () {
             Route::any('/payfast/cancel', 'payfast_cancel')->name('api.payfast.cancel');
         });
         //Payfast routes <ends>
+
+        Route::get('/myfatoorah/callback', 'App\Http\Controllers\Api\V2\MyfatoorahController@callback')->name('api.myfatoorah.callback');
+
+
+        Route::any('/phonepe/redirecturl', 'App\Http\Controllers\Api\V2\PhonepeController@phonepe_redirecturl')->name('api.phonepe.redirecturl');
+        Route::any('/phonepe/callbackUrl', 'App\Http\Controllers\Api\V2\PhonepeController@phonepe_callbackUrl')->name('api.phonepe.callbackUrl');
     });
 });
 
