@@ -113,8 +113,7 @@ Route::controller(HomeController::class)->group(function () {
     Route::get('/deliveryboy/login', 'login')->name('deliveryboy.login')->middleware('handle-demo-login');
     Route::get('/users/registration', 'registration')->name('user.registration')->middleware('handle-demo-login');
     Route::post('/users/login/cart', 'cart_login')->name('cart.login.submit')->middleware('handle-demo-login');
-    // Route::get('/new-page', 'new_page')->name('new_page');
-
+    Route::post('/send-otp', 'sendOTP')->name('send-otp');
 
     //Home Page
     Route::get('/', 'index')->name('home');

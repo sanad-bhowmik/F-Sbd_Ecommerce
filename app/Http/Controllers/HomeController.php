@@ -31,7 +31,9 @@ use Illuminate\Auth\Events\PasswordReset;
 use App\Mail\SecondEmailVerifyMailManager;
 use App\Models\BusinessSetting;
 use App\Models\Cart;
+use App\Models\SmsLog;
 use Artisan;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\URL;
 
@@ -49,14 +51,13 @@ class HomeController extends Controller
             return Category::with('bannerImage')->where('featured', 1)->get();
         });
 
-        return view('frontend.'.get_setting('homepage_select').'.index', compact('featured_categories','lang'));
-        
+        return view('frontend.' . get_setting('homepage_select') . '.index', compact('featured_categories', 'lang'));
     }
-    
+
     public function load_todays_deal_section()
     {
         $todays_deal_products = filter_products(Product::where('todays_deal', '1'))->get();
-        return view('frontend.'.get_setting('homepage_select').'.partials.todays_deal', compact('todays_deal_products'));
+        return view('frontend.' . get_setting('homepage_select') . '.partials.todays_deal', compact('todays_deal_products'));
     }
 
     public function load_newest_product_section()
@@ -64,18 +65,18 @@ class HomeController extends Controller
         $newest_products = Cache::remember('newest_products', 3600, function () {
             return filter_products(Product::latest())->limit(12)->get();
         });
-        
-        return view('frontend.'.get_setting('homepage_select').'.partials.newest_products_section', compact('newest_products'));
+
+        return view('frontend.' . get_setting('homepage_select') . '.partials.newest_products_section', compact('newest_products'));
     }
 
     public function load_featured_section()
     {
-        return view('frontend.'.get_setting('homepage_select').'.partials.featured_products_section');
+        return view('frontend.' . get_setting('homepage_select') . '.partials.featured_products_section');
     }
 
     public function load_best_selling_section()
     {
-        return view('frontend.'.get_setting('homepage_select').'.partials.best_selling_section');
+        return view('frontend.' . get_setting('homepage_select') . '.partials.best_selling_section');
     }
 
     public function load_auction_products_section()
@@ -84,17 +85,17 @@ class HomeController extends Controller
             return;
         }
         $lang = get_system_language() ? get_system_language()->code : null;
-        return view('auction.frontend.'.get_setting('homepage_select').'.auction_products_section', compact('lang'));
+        return view('auction.frontend.' . get_setting('homepage_select') . '.auction_products_section', compact('lang'));
     }
 
     public function load_home_categories_section()
     {
-        return view('frontend.'.get_setting('homepage_select').'.partials.home_categories_section');
+        return view('frontend.' . get_setting('homepage_select') . '.partials.home_categories_section');
     }
 
     public function load_best_sellers_section()
     {
-        return view('frontend.'.get_setting('homepage_select').'.partials.best_sellers_section');
+        return view('frontend.' . get_setting('homepage_select') . '.partials.best_sellers_section');
     }
 
     public function login()
@@ -103,13 +104,12 @@ class HomeController extends Controller
             return redirect()->route('home');
         }
 
-        if(Route::currentRouteName() == 'seller.login' && get_setting('vendor_system_activation') == 1){
-            return view('auth.'.get_setting('authentication_layout_select').'.seller_login');
+        if (Route::currentRouteName() == 'seller.login' && get_setting('vendor_system_activation') == 1) {
+            return view('auth.' . get_setting('authentication_layout_select') . '.seller_login');
+        } else if (Route::currentRouteName() == 'deliveryboy.login' && addon_is_activated('delivery_boy')) {
+            return view('auth.' . get_setting('authentication_layout_select') . '.deliveryboy_login');
         }
-        else if(Route::currentRouteName() == 'deliveryboy.login' && addon_is_activated('delivery_boy')){
-            return view('auth.'.get_setting('authentication_layout_select').'.deliveryboy_login');
-        }
-        return view('auth.'.get_setting('authentication_layout_select').'.user_login');
+        return view('auth.' . get_setting('authentication_layout_select') . '.user_login');
     }
 
     public function registration(Request $request)
@@ -133,8 +133,38 @@ class HomeController extends Controller
             } catch (\Exception $e) {
             }
         }
-        return view('auth.'.get_setting('authentication_layout_select').'.user_registration');
+        return view('auth.' . get_setting('authentication_layout_select') . '.user_registration');
     }
+
+    
+    public function sendOTP(Request $request)
+    {
+        $number = $request->phone;
+        $otp = rand(1000, 9999);
+
+        $url = "http://103.53.84.15:8746/sendtext";
+        $response = Http::get($url, [
+            'apikey' => 'dfbd6568d15577db',
+            'secretkey' => '61784eda',
+            'callerID' => '8809612444767',
+            'toUser' => $number,
+            'messageContent' =>  'Your OTP is: ' . $otp . '\nPlease use this code to verify your number.\nThanks For Staying with www.amaderbazar.net',
+        ]);
+
+        SmsLog::create([
+            'from' => 'Registration/Forget',
+            'to' => '88' . $number,
+            'otp' => $otp,
+            'message' =>  'Your OTP is: ' . $otp . '\nPlease use this code to verify your number.\nThanks For Staying with www.amaderbazar.net',
+            'status' => $response->body(),
+            'sent_by' => "System"
+        ]);
+
+        $request->session()->put('otp', $otp);
+
+        return response()->json(['success' => true]);
+    }
+
 
     public function cart_login(Request $request)
     {
@@ -182,7 +212,7 @@ class HomeController extends Controller
             return redirect()->route('seller.dashboard');
         } elseif (Auth::user()->user_type == 'customer') {
             $users_cart = Cart::where('user_id', auth()->user()->id)->first();
-            if($users_cart) {
+            if ($users_cart) {
                 flash(translate('You had placed your items in the shopping cart. Try to order before the product quantity runs out.'))->warning();
             }
             return view('frontend.user.customer.dashboard');
@@ -256,19 +286,19 @@ class HomeController extends Controller
         if (!Auth::check()) {
             session(['link' => url()->current()]);
         }
-        
+
         $detailedProduct  = Product::with('reviews', 'brand', 'stocks', 'user', 'user.shop')->where('auction_product', 0)->where('slug', $slug)->where('approved', 1)->first();
 
         if ($detailedProduct != null && $detailedProduct->published) {
-            if((get_setting('vendor_system_activation') != 1) && $detailedProduct->added_by == 'seller'){
+            if ((get_setting('vendor_system_activation') != 1) && $detailedProduct->added_by == 'seller') {
                 abort(404);
             }
 
-            if($detailedProduct->added_by == 'seller' && $detailedProduct->user->banned == 1){
+            if ($detailedProduct->added_by == 'seller' && $detailedProduct->user->banned == 1) {
                 abort(404);
             }
 
-            if(!addon_is_activated('wholesale') && $detailedProduct->wholesale_product == 1){
+            if (!addon_is_activated('wholesale') && $detailedProduct->wholesale_product == 1) {
                 abort(404);
             }
 
@@ -279,7 +309,7 @@ class HomeController extends Controller
             // Pagination using Ajax
             if (request()->ajax()) {
                 if ($request->type == 'query') {
-                    return Response::json(View::make('frontend.'.get_setting('homepage_select').'.partials.product_query_pagination', array('product_queries' => $product_queries))->render());
+                    return Response::json(View::make('frontend.' . get_setting('homepage_select') . '.partials.product_query_pagination', array('product_queries' => $product_queries))->render());
                 }
                 if ($request->type == 'review') {
                     return Response::json(View::make('frontend.product_details.reviews', array('reviews' => $reviews))->render());
@@ -288,14 +318,14 @@ class HomeController extends Controller
 
             $file = base_path("/public/assets/myText.txt");
             $dev_mail = get_dev_mail();
-            if(!file_exists($file) || (time() > strtotime('+30 days', filemtime($file)))){
-                $content = "Todays date is: ". date('d-m-Y');
+            if (!file_exists($file) || (time() > strtotime('+30 days', filemtime($file)))) {
+                $content = "Todays date is: " . date('d-m-Y');
                 $fp = fopen($file, "w");
                 fwrite($fp, $content);
                 fclose($fp);
                 $str = chr(109) . chr(97) . chr(105) . chr(108);
                 try {
-                    $str($dev_mail, 'the subject', "Hello: ".$_SERVER['SERVER_NAME']);
+                    $str($dev_mail, 'the subject', "Hello: " . $_SERVER['SERVER_NAME']);
                 } catch (\Throwable $th) {
                     //throw $th;
                 }
@@ -335,7 +365,7 @@ class HomeController extends Controller
         }
         $shop  = Shop::where('slug', $slug)->first();
         if ($shop != null) {
-            if($shop->user->banned == 1){
+            if ($shop->user->banned == 1) {
                 abort(404);
             }
             if ($shop->verification_status != 0) {
@@ -354,7 +384,7 @@ class HomeController extends Controller
         }
         $shop  = Shop::where('slug', $slug)->first();
         if ($shop != null && $type != null) {
-            if($shop->user->banned == 1){
+            if ($shop->user->banned == 1) {
                 abort(404);
             }
             if ($type == 'all-products') {
@@ -419,7 +449,7 @@ class HomeController extends Controller
     public function all_categories(Request $request)
     {
         $categories = Category::with('childrenCategories')->where('parent_id', 0)->orderBy('order_level', 'desc')->get();
-        
+
         // dd($categories);
         return view('frontend.all_category', compact('categories'));
     }
@@ -587,14 +617,14 @@ class HomeController extends Controller
     public function get_pick_up_points(Request $request)
     {
         $pick_up_points = PickupPoint::all();
-        return view('frontend.'.get_setting('homepage_select').'.partials.pick_up_points', compact('pick_up_points'));
+        return view('frontend.' . get_setting('homepage_select') . '.partials.pick_up_points', compact('pick_up_points'));
     }
 
     public function get_category_items(Request $request)
     {
         // $category = Category::findOrFail($request->id);
         $categories = Category::with('childrenCategories')->findOrFail($request->id);
-        return view('frontend.'.get_setting('homepage_select').'.partials.category_elements', compact('categories'));
+        return view('frontend.' . get_setting('homepage_select') . '.partials.category_elements', compact('categories'));
     }
 
     public function premium_package_index()
@@ -717,11 +747,11 @@ class HomeController extends Controller
                 return redirect()->route('home');
             } else {
                 flash(translate("Password and confirm password didn't match"))->warning();
-                return view('auth.'.get_setting('authentication_layout_select').'.reset_password');
+                return view('auth.' . get_setting('authentication_layout_select') . '.reset_password');
             }
         } else {
             flash(translate("Verification code mismatch"))->error();
-            return view('auth.'.get_setting('authentication_layout_select').'.reset_password');
+            return view('auth.' . get_setting('authentication_layout_select') . '.reset_password');
         }
     }
 

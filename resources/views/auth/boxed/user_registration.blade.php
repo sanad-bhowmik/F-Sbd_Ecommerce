@@ -7,6 +7,45 @@
     .hidden {
         display: none;
     }
+
+    .toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: #4CAF50;
+        color: white;
+        z-index: 9999;
+        display: none;
+    }
+
+    .toast.show {
+        display: block;
+        animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    }
+
+    @keyframes fadein {
+        from {
+            top: 0;
+            opacity: 0;
+        }
+
+        to {
+            top: 20px;
+            opacity: 1;
+        }
+    }
+
+    @keyframes fadeout {
+        from {
+            top: 20px;
+            opacity: 1;
+        }
+
+        to {
+            top: 0;
+            opacity: 0;
+        }
+    }
 </style>
 <div class="aiz-main-wrapper d-flex flex-column justify-content-md-center bg-white">
     <section class="bg-white overflow-hidden">
@@ -213,6 +252,11 @@
         </div>
     </section>
 </div>
+<div id="customToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-body">
+        OTP has been sent successfully
+    </div>
+</div>
 @endsection
 
 @section('script')
@@ -241,14 +285,38 @@
     @endif
 </script>
 <script>
-    var createAccountBtn = document.getElementById("createAccountBtn");
-
-    var otpDiv = document.getElementById("otpDiv");
-
-    createAccountBtn.addEventListener("click", function(event) {
+    document.getElementById("createAccountBtn").addEventListener("click", function(event) {
         event.preventDefault();
-
+        var nameInput = document.querySelector('input[name="name"]');
+        var emailInput = document.querySelector('input[name="email"]');
+        var phoneInput = document.querySelector('input[name="phone"]');
+        if (!nameInput.value || !emailInput.value || !phoneInput.value) {
+            alert("Please fill in all required fields (Name, Email, Phone).");
+            return;
+        }
+        var otpDiv = document.getElementById("otpDiv");
         otpDiv.classList.remove("hidden");
+
+        // Send AJAX request to send OTP
+        $.ajax({
+            url: '{{ route("send-otp") }}',
+            type: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                phone: phoneInput.value
+            },
+            success: function(response) {
+                // Show custom toast notification
+                var customToast = document.getElementById("customToast");
+                customToast.classList.add("show");
+                setTimeout(function() {
+                    customToast.classList.remove("show");
+                }, 3000); // Hide the toast after 3 seconds
+            },
+            error: function(xhr, status, error) {
+                console.error('Failed to send OTP');
+            }
+        });
     });
 </script>
 @endsection
