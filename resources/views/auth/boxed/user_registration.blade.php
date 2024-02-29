@@ -4,6 +4,24 @@
 
 
 <style>
+    @keyframes blink {
+        0% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0;
+        }
+
+        100% {
+            opacity: 1;
+        }
+    }
+
+    .blink {
+        animation: blink 1s infinite;
+    }
+
     .hidden {
         display: none;
     }
@@ -55,7 +73,8 @@
                     <div class="row no-gutters">
                         <!-- Left Side Image-->
                         <div class="col-lg-6">
-                            <img src="https://img.freepik.com/premium-photo/stylish-compositon-elegant-living-room-interior-design-with-fluffy-armchair-wooden-commode-mock-up-poster-frame-modern-home-accessories-blue-wall-home-staging-template-copy-space_431307-7063.jpg" class="img-fit h-100">
+                            <img src="https://i.ibb.co/PZGLhcq/4115750.jpg" class="img-fit h-100">
+                            <!--<img src="https://img.freepik.com/free-vector/background-hand-holding-id-card_23-2147834395.jpg" class="img-fit h-100">-->
                         </div>
 
                         <!-- Right Side -->
@@ -76,8 +95,8 @@
                                     <form id="reg-form" class="form-default" role="form" action="{{ route('register') }}" method="POST">
                                         @csrf
                                         <!-- Name -->
-                                        <div class="form-group">
-                                            <label for="name" class="fs-12 fw-700 text-soft-dark">{{ translate('Full Name') }}</label>
+                                        <div class="form-group upper-fields">
+                                            <label for="name" class="fs-12 fw-700 text-soft-dark">{{ translate('Full Name') }}</label> <span class="text-danger blink">*</span>
                                             <input type="text" class="form-control rounded-0{{ $errors->has('name') ? ' is-invalid' : '' }}" value="{{ old('name') }}" placeholder="{{  translate('Full Name') }}" name="name">
                                             @if ($errors->has('name'))
                                             <span class="invalid-feedback" role="alert">
@@ -86,7 +105,7 @@
                                             @endif
                                         </div>
                                         <div class="form-group">
-                                            <label for="phone" class="fs-12 fw-700 text-soft-dark">{{ translate('Phone') }}</label>
+                                            <label for="phone" class="fs-12 fw-700 text-soft-dark">{{ translate('Phone') }}</label> <span class="text-danger">*</span>
                                             <input type="text" class="form-control{{ $errors->has('phone') ? ' is-invalid' : '' }} rounded-0" value="{{ old('phone') }}" placeholder="{{ translate('Phone Number') }}" name="phone" id="phone" autocomplete="off" required>
                                         </div>
 
@@ -94,7 +113,7 @@
                                         <!-- Email or Phone -->
                                         @if (addon_is_activated('otp_system'))
                                         <div class="form-group phone-form-group mb-1">
-                                            <label for="phone" class="fs-12 fw-700 text-soft-dark">{{ translate('Phone') }}</label>
+                                            <label for="phone" class="fs-12 fw-700 text-soft-dark">{{ translate('Phone') }}</label> <span class="text-danger">*</span>
                                             <input type="tel" id="phone-code" class="form-control rounded-0{{ $errors->has('phone') ? ' is-invalid' : '' }}" value="{{ old('phone') }}" placeholder="" name="phone" autocomplete="off">
                                         </div>
 
@@ -114,7 +133,7 @@
                                             <button class="btn btn-link p-0 text-primary" type="button" onclick="toggleEmailPhone(this)"><i>*{{ translate('Use Email Instead') }}</i></button>
                                         </div>
                                         @else
-                                        <div class="form-group">
+                                        <div class="form-group d-none upper-fields">
                                             <label for="email" class="fs-12 fw-700 text-soft-dark">{{ translate('Email') }}</label>
                                             <input type="email" class="form-control rounded-0{{ $errors->has('email') ? ' is-invalid' : '' }}" value="{{ old('email') }}" placeholder="{{  translate('Email') }}" name="email">
                                             @if ($errors->has('email'))
@@ -126,8 +145,8 @@
                                         @endif
 
                                         <!-- password -->
-                                        <div class="form-group mb-0">
-                                            <label for="password" class="fs-12 fw-700 text-soft-dark">{{ translate('Password') }}</label>
+                                        <div class="form-group mb-0 upper-fields">
+                                            <label for="password" class="fs-12 fw-700 text-soft-dark">{{ translate('Password') }}</label> <span class="text-danger">*</span>
                                             <div class="position-relative">
                                                 <input type="password" class="form-control rounded-0{{ $errors->has('password') ? ' is-invalid' : '' }}" placeholder="{{  translate('Password') }}" name="password">
                                                 <i class="password-toggle las la-2x la-eye"></i>
@@ -143,8 +162,8 @@
                                         </div>
 
                                         <!-- password Confirm -->
-                                        <div class="form-group">
-                                            <label for="password_confirmation" class="fs-12 fw-700 text-soft-dark">{{ translate('Confirm Password') }}</label>
+                                        <div class="form-group upper-fields">
+                                            <label for="password_confirmation" class="fs-12 fw-700 text-soft-dark">{{ translate('Confirm Password') }}</label> <span class="text-danger">*</span>
                                             <div class="position-relative">
                                                 <input type="password" class="form-control rounded-0" placeholder="{{  translate('Confirm Password') }}" name="password_confirmation">
                                                 <i class="password-toggle las la-2x la-eye"></i>
@@ -153,7 +172,7 @@
 
                                         <!-- Recaptcha -->
                                         @if(get_setting('google_recaptcha') == 1)
-                                        <div class="form-group">
+                                        <div class="form-group upper-fields">
                                             <div class="g-recaptcha" data-sitekey="{{ env('CAPTCHA_KEY') }}"></div>
                                         </div>
                                         @if ($errors->has('g-recaptcha-response'))
@@ -164,7 +183,7 @@
                                         @endif
 
                                         <!-- Terms and Conditions -->
-                                        <div class="mb-3">
+                                        <div class="mb-3 upper-fields">
                                             <label class="aiz-checkbox">
                                                 <input type="checkbox" name="checkbox_example_1" required>
                                                 <span class="">{{ translate('By signing up you agree to our ')}} <a href="{{ route('terms') }}" class="fw-500">{{ translate('terms and conditions.') }}</a></span>
@@ -173,7 +192,7 @@
                                         </div>
 
                                         <!-- Submit Button -->
-                                        <div class="mb-4 mt-4">
+                                        <div class="mb-4 mt-4 upper-fields">
                                             <button class="btn btn-primary btn-block fw-600 rounded-0" id="createAccountBtn">{{ translate('Create Account') }}</button>
                                         </div>
 
@@ -183,6 +202,9 @@
                                                 <label for="OTP" class="fs-12 fw-700 text-soft-dark">{{ translate('OTP') }}</label>
                                                 <div class="position-relative">
                                                     <input type="text" class="form-control rounded-0" placeholder="{{  translate('OTP') }}" name="OTP">
+                                                </div>
+                                                <div class="text-right mt-1">
+                                                    <span class="text-danger">*</span> <span class="fs-12 fw-400 text-gray-dark">{{ translate('Confirm Your 4 digits otp.') }}</span>
                                                 </div>
                                             </div>
 
@@ -289,16 +311,19 @@
     document.getElementById("createAccountBtn").addEventListener("click", function(event) {
         event.preventDefault();
         var nameInput = document.querySelector('input[name="name"]');
-        var emailInput = document.querySelector('input[name="email"]');
         var phoneInput = document.querySelector('input[name="phone"]');
-        if (!nameInput.value || !emailInput.value || !phoneInput.value) {
-            alert("Please fill in all required fields (Name, Email, Phone).");
+        if (!nameInput.value ||  !phoneInput.value) {
+            alert("Please fill in all required fields (Name, Phone, Password).");
             return;
         }
         var otpDiv = document.getElementById("otpDiv");
         otpDiv.classList.remove("hidden");
 
-        // Send AJAX request to send OTP
+        var upperFields = document.querySelectorAll('.upper-fields');
+        for (var i = 0; i < upperFields.length; i++) {
+            upperFields[i].classList.add("hidden");
+        }
+
         $.ajax({
             url: '{{ route("send-otp") }}',
             type: 'POST',
@@ -307,12 +332,11 @@
                 phone: phoneInput.value
             },
             success: function(response) {
-                // Show custom toast notification
                 var customToast = document.getElementById("customToast");
                 customToast.classList.add("show");
                 setTimeout(function() {
                     customToast.classList.remove("show");
-                }, 3000); // Hide the toast after 3 seconds
+                }, 3000);
             },
             error: function(xhr, status, error) {
                 console.error('Failed to send OTP');
@@ -320,6 +344,7 @@
         });
     });
 </script>
+
 <!-- OTP Send -->
 <!-- otp Verification -->
 <script>
@@ -347,9 +372,9 @@
             data: formData,
             success: function(response) {
                 if (response.success) {
-                    window.location.href = 'https://nobotexmart.com/'; 
+                    window.location.href = 'https://www.amaderbazar.net/';
                 } else {
-                    alert(response.message); 
+                    alert(response.message);
                 }
             },
             error: function(xhr, status, error) {

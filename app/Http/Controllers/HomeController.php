@@ -36,6 +36,7 @@ use Artisan;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Carbon;
 
 class HomeController extends Controller
 {
@@ -164,7 +165,6 @@ class HomeController extends Controller
 
         return response()->json(['success' => true]);
     }
-    
     public function verifyOTP(Request $request)
     {
         $enteredOTP = $request->input('OTP');
@@ -176,9 +176,10 @@ class HomeController extends Controller
                 'email' => $request->input('email'),
                 'phone' => $request->input('phone'),
                 'password' => bcrypt($request->input('password')),
+                'email_verified_at' => Carbon::now(),
+                'verification_code' => $enteredOTP,
             ]);
 
-            // If the user is successfully created, log them in
             if ($user) {
                 auth()->login($user);
                 return response()->json(['success' => true, 'message' => 'Registration successful']);
