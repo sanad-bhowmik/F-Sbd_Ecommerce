@@ -31,6 +31,7 @@ use Illuminate\Auth\Events\PasswordReset;
 use App\Mail\SecondEmailVerifyMailManager;
 use App\Models\BusinessSetting;
 use App\Models\Cart;
+use App\Models\SaveLaterProduct;
 use App\Models\SmsLog;
 use Artisan;
 use Illuminate\Support\Facades\Http;
@@ -47,6 +48,7 @@ class HomeController extends Controller
      */
     public function index()
     {
+        //dd("test");
         $lang = get_system_language() ? get_system_language()->code : null;
         $featured_categories = Cache::rememberForever('featured_categories', function () {
             return Category::with('bannerImage')->where('featured', 1)->get();
@@ -69,6 +71,36 @@ class HomeController extends Controller
 
         return view('frontend.' . get_setting('homepage_select') . '.partials.newest_products_section', compact('newest_products'));
     }
+
+
+    public function savelater(Request $request)
+    {
+        // Ensure the user is authenticated
+        if (!Auth::check()) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+        $request->validate([
+            'product_id' => 'required|integer|exists:products,id',
+        ]);
+
+        $existing = SaveLaterProduct::where('user_id', Auth::id())
+            ->where('product_id', $request->product_id)
+            ->first();
+
+        if ($existing) {
+            return response()->json(['message' => 'Product already saved'], 200);
+        }
+
+        // Save the product for later
+        SaveLaterProduct::create([
+            'user_id' => Auth::id(),
+            'product_id' => $request->product_id,
+            'status' => 'saved',
+        ]);
+
+        return response()->json(['message' => 'Product saved for later'], 200);
+    }
+
 
     public function load_featured_section()
     {
@@ -138,83 +170,143 @@ class HomeController extends Controller
     }
 
 
+    public function registrationSubmit(Request $request)
+    {
+        // Validate the password only
+        $request->validate([
+            'password' => 'required|min:6', // Password validation
+        ]);
+
+        // Get the user by phone (assuming the phone number is stored in the session or passed)
+        $user = User::where('phone', $request->phone)->first();
+
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'User not found.']);
+        }
+
+        // Update the user's password
+        $user->password = bcrypt($request->password); // Hash the password before saving
+        $user->save();
+
+        // Log the user in after registration
+        Auth::login($user);
+
+        return response()->json(['success' => true, 'message' => 'Registration successful and user logged in.']);
+        // return redirect('/');
+    }
+
+
+
+
     public function sendOTP(Request $request)
     {
-        $number = $request->phone;
-        $otp = rand(1000, 9999);
+        // Validate only the phone number (no password)
+        $request->validate([
+            'phone' => 'required|regex:/^[0-9]{10,13}$/|unique:users,phone',
+        ]);
 
+        $number = $request->phone;
+        $otp = rand(1000, 9999); // Generate OTP
+
+        // Save OTP to the database with unverified status (no password needed)
+        $user = User::create([
+            'phone' => $number,
+            'verification_code' => $otp, // Store OTP in database
+            'email_verified_at' => null, // Not verified yet
+        ]);
+
+        // Send OTP via SMS
         $url = "http://103.53.84.15:8746/sendtext";
         $response = Http::get($url, [
             'apikey' => 'dfbd6568d15577db',
             'secretkey' => '61784eda',
             'callerID' => '8809612444767',
             'toUser' => $number,
-            'messageContent' =>  'Your OTP is: ' . $otp . '\nPlease use this code to verify your number.\nThanks For Staying with www.amaderbazar.net',
+            'messageContent' => "Your OTP is: $otp\nPlease use this code to verify your number.\nThanks For Staying with www.amaderbazar.net",
         ]);
 
+        // Log SMS details for debugging
         SmsLog::create([
-            'from' => 'Registration/Forget',
+            'from' => 'Registration',
             'to' => '88' . $number,
             'otp' => $otp,
-            'message' =>  'Your OTP is: ' . $otp . '\nPlease use this code to verify your number.\nThanks For Staying with www.amaderbazar.net',
+            'message' => "Your OTP is: $otp\nPlease use this code to verify your number.\nThanks For Staying with www.amaderbazar.net",
             'status' => $response->body(),
-            'sent_by' => "System"
+            'sent_by' => "System",
         ]);
 
-        $request->session()->put('otp', $otp);
-
-        return response()->json(['success' => true]);
+        return response()->json(['success' => true, 'message' => 'OTP sent successfully.']);
     }
+
+
     public function verifyOTP(Request $request)
     {
-        $enteredOTP = $request->input('OTP');
-        $storedOTP = $request->session()->get('otp');
+        $request->validate([
+            'phone' => 'required|regex:/^[0-9]{10,13}$/',
+            'otp' => 'required|digits:4', // Ensure OTP is a 4-digit number
+        ]);
 
-        if ($enteredOTP == $storedOTP) {
-            $user = User::create([
-                'name' => $request->input('name'),
-                'email' => $request->input('email'),
-                'phone' => $request->input('phone'),
-                'password' => bcrypt($request->input('password')),
-                'email_verified_at' => Carbon::now(),
-                'verification_code' => $enteredOTP,
-            ]);
+        // Find the user by phone number
+        $user = User::where('phone', $request->phone)->first();
 
-            if ($user) {
-                auth()->login($user);
-                return response()->json(['success' => true, 'message' => 'Registration successful']);
-            } else {
-                return response()->json(['success' => false, 'message' => 'Failed to create user']);
-            }
-        } else {
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'User not found.']);
+        }
+
+        // Check if OTP matches
+        if ($user->verification_code != $request->otp) {
             return response()->json(['success' => false, 'message' => 'Invalid OTP. Please try again.']);
         }
+
+        // Mark the user as verified
+        $user->email_verified_at = Carbon::now(); // Mark as verified
+        $user->verification_code = null; // Clear the OTP
+        $user->save();
+
+        // Log the user in
+        Auth::login($user);
+
+        return response()->json(['success' => true, 'message' => 'Verification successful.']);
     }
+
 
     public function cart_login(Request $request)
     {
         $user = null;
-        if ($request->get('phone') != null) {
-            $user = User::whereIn('user_type', ['customer', 'seller'])->where('phone', "+{$request['country_code']}{$request['phone']}")->first();
-        } elseif ($request->get('email') != null) {
-            $user = User::whereIn('user_type', ['customer', 'seller'])->where('email', $request->email)->first();
+
+        if ($request->has('phone')) {
+            $countryCode = $request->get('country_code', '');
+            $phone = $countryCode ? "+{$countryCode}{$request->phone}" : $request->phone;
+
+            $user = User::whereIn('user_type', ['customer', 'seller', 'admin'])->where('phone', $phone)->first();
+        } elseif ($request->has('email')) {
+            $user = User::whereIn('user_type', ['customer', 'seller', 'admin'])->where('email', $request->email)->first();
         }
 
-        if ($user != null) {
+        if ($user) {
             if (Hash::check($request->password, $user->password)) {
                 if ($request->has('remember')) {
                     auth()->login($user, true);
                 } else {
                     auth()->login($user, false);
                 }
+
+                if ($user->user_type === 'admin') {
+                    return redirect('/admin');
+                } else {
+                    return redirect()->route('dashboard');
+                }
             } else {
-                flash(translate('Invalid email or password!'))->warning();
+                flash(translate('Invalid password!'))->warning();
             }
         } else {
-            flash(translate('Invalid email or password!'))->warning();
+            flash(translate('Invalid phone or email!'))->warning();
         }
+
         return back();
     }
+
+
 
     /**
      * Create a new controller instance.
@@ -233,20 +325,37 @@ class HomeController extends Controller
      */
     public function dashboard()
     {
-        if (Auth::user()->user_type == 'seller') {
+        $user = Auth::user();  // Get the currently authenticated user
+
+        // Get the latest order based on user ID (no need to check the phone number)
+        $latestOrder = Order::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc') // Explicitly order by 'created_at' descending to get the latest order
+            ->first();
+
+        // Check user type and redirect or show corresponding views
+        if ($user->user_type == 'seller') {
+            // If the user is a seller, redirect to the seller dashboard
             return redirect()->route('seller.dashboard');
-        } elseif (Auth::user()->user_type == 'customer') {
-            $users_cart = Cart::where('user_id', auth()->user()->id)->first();
+        } elseif ($user->user_type == 'customer') {
+            // If the user is a customer, check if they have items in the cart
+            $users_cart = Cart::where('user_id', $user->id)->first();  // Get the user's cart
+
             if ($users_cart) {
-                flash(translate('You had placed your items in the shopping cart. Try to order before the product quantity runs out.'))->warning();
+                // If there are items in the cart, show a warning message
+                flash(translate('You have placed items in your shopping cart. Try to order before the product quantity runs out.'))->warning();
             }
-            return view('frontend.user.customer.dashboard');
-        } elseif (Auth::user()->user_type == 'delivery_boy') {
+
+            // Pass the latest order to the view, including the code of the latest order
+            return view('frontend.user.customer.dashboard', compact('latestOrder'));
+        } elseif ($user->user_type == 'delivery_boy') {
+            // If the user is a delivery boy, return the delivery boy dashboard
             return view('delivery_boys.dashboard');
         } else {
+            // If no matching user type is found, abort with a 404 error
             abort(404);
         }
     }
+
 
     public function profile(Request $request)
     {
@@ -312,7 +421,7 @@ class HomeController extends Controller
             session(['link' => url()->current()]);
         }
 
-        $detailedProduct  = Product::with('reviews', 'brand', 'stocks', 'user', 'user.shop')->where('auction_product', 0)->where('slug', $slug)->where('approved', 1)->first();
+        $detailedProduct = Product::with('reviews', 'brand', 'stocks', 'user', 'user.shop')->where('auction_product', 0)->where('slug', $slug)->where('approved', 1)->first();
 
         if ($detailedProduct != null && $detailedProduct->published) {
             if ((get_setting('vendor_system_activation') != 1) && $detailedProduct->added_by == 'seller') {
@@ -359,9 +468,11 @@ class HomeController extends Controller
             // review status
             $review_status = 0;
             if (Auth::check()) {
-                $OrderDetail = OrderDetail::with(['order' => function ($q) {
-                    $q->where('user_id', Auth::id());
-                }])->where('product_id', $detailedProduct->id)->where('delivery_status', 'delivered')->first();
+                $OrderDetail = OrderDetail::with([
+                    'order' => function ($q) {
+                        $q->where('user_id', Auth::id());
+                    }
+                ])->where('product_id', $detailedProduct->id)->where('delivery_status', 'delivered')->first();
                 $review_status = $OrderDetail ? 1 : 0;
             }
             if ($request->has('product_referral_code') && addon_is_activated('affiliate_system')) {
@@ -388,7 +499,7 @@ class HomeController extends Controller
         if (get_setting('vendor_system_activation') != 1) {
             return redirect()->route('home');
         }
-        $shop  = Shop::where('slug', $slug)->first();
+        $shop = Shop::where('slug', $slug)->first();
         if ($shop != null) {
             if ($shop->user->banned == 1) {
                 abort(404);
@@ -407,7 +518,7 @@ class HomeController extends Controller
         if (get_setting('vendor_system_activation') != 1) {
             return redirect()->route('home');
         }
-        $shop  = Shop::where('slug', $slug)->first();
+        $shop = Shop::where('slug', $slug)->first();
         if ($shop != null && $type != null) {
             if ($shop->user->banned == 1) {
                 abort(404);
@@ -611,31 +722,31 @@ class HomeController extends Controller
 
     public function sellerpolicy()
     {
-        $page =  Page::where('type', 'seller_policy_page')->first();
+        $page = Page::where('type', 'seller_policy_page')->first();
         return view("frontend.policies.sellerpolicy", compact('page'));
     }
 
     public function returnpolicy()
     {
-        $page =  Page::where('type', 'return_policy_page')->first();
+        $page = Page::where('type', 'return_policy_page')->first();
         return view("frontend.policies.returnpolicy", compact('page'));
     }
 
     public function supportpolicy()
     {
-        $page =  Page::where('type', 'support_policy_page')->first();
+        $page = Page::where('type', 'support_policy_page')->first();
         return view("frontend.policies.supportpolicy", compact('page'));
     }
 
     public function terms()
     {
-        $page =  Page::where('type', 'terms_conditions_page')->first();
+        $page = Page::where('type', 'terms_conditions_page')->first();
         return view("frontend.policies.terms", compact('page'));
     }
 
     public function privacypolicy()
     {
-        $page =  Page::where('type', 'privacy_policy_page')->first();
+        $page = Page::where('type', 'privacy_policy_page')->first();
         return view("frontend.policies.privacypolicy", compact('page'));
     }
 
@@ -731,7 +842,7 @@ class HomeController extends Controller
     public function email_change_callback(Request $request)
     {
         if ($request->has('new_email_verificiation_code') && $request->has('email')) {
-            $verification_code_of_url_param =  $request->input('new_email_verificiation_code');
+            $verification_code_of_url_param = $request->input('new_email_verificiation_code');
             $user = User::where('new_email_verificiation_code', $verification_code_of_url_param)->first();
 
             if ($user != null) {
@@ -779,6 +890,27 @@ class HomeController extends Controller
             return view('auth.' . get_setting('authentication_layout_select') . '.reset_password');
         }
     }
+    public function verifyAndResetPassword(Request $request)
+    {
+        $request->validate([
+            'phone' => 'required|exists:users,phone',
+            'password' => 'required|confirmed',
+        ]);
+
+        $user = User::where('phone', $request->phone)->first();
+
+        if ($user) {
+            $user->password = bcrypt($request->password);
+            $user->save();
+
+            flash(translate('Your password has been successfully reset.'))->success();
+            return redirect()->route('home'); // Redirect to home route ('/')
+        }
+
+        flash(translate('Phone number not found.'))->error();
+        return back();
+    }
+
 
 
     public function all_flash_deals()

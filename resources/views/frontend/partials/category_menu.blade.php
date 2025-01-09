@@ -12,10 +12,10 @@
                         onerror="this.onerror=null;this.src='{{ static_asset('assets/img/placeholder.jpg') }}';">
                     <span class="cat-name has-transition">{{ $category_name }}</span>
                 </a>
-                
+
                 <div class="sub-cat-menu c-scrollbar-light border p-4 shadow-none">
                     <div class="c-preloader text-center absolute-center">
-                        <i class="las la-spinner la-spin la-3x opacity-70"></i>
+                        <i class="las la-spinnert la-spin la-3x opacity-70"></i>
                     </div>
                 </div>
 

@@ -1,4 +1,4 @@
-@extends('backend.layouts.app')
+@extends('backendlayouts.app')
 
 @section('content')
     <h4 class="text-center text-muted">{{ translate('System') }}</h4>

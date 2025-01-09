@@ -105,7 +105,7 @@
             e.stopPropagation()
             $(this).tab('show')
         })
-        
+
         if ($('#lang-change').length > 0) {
             $('#lang-change .dropdown-menu a').each(function() {
                 $(this).on('click', function(e){

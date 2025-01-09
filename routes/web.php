@@ -84,7 +84,7 @@ Route::controller(AizUploadController::class)->group(function () {
     Route::get('/aiz-uploader/download/{id}', 'attachment_download')->name('download_attachment');
 });
 
-Route::group(['middleware' => ['prevent-back-history','handle-demo-login']], function () {
+Route::group(['middleware' => ['prevent-back-history', 'handle-demo-login']], function () {
     Auth::routes(['verify' => true]);
 });
 
@@ -105,8 +105,15 @@ Route::controller(VerificationController::class)->group(function () {
 });
 
 Route::controller(HomeController::class)->group(function () {
+    //Home Page
+
+    Route::get('/', 'index')->name('home');
     Route::get('/email-change/callback', 'email_change_callback')->name('email_change.callback');
     Route::post('/password/reset/email/submit', 'reset_password_with_code')->name('password.update');
+
+    Route::post('/password/phone/verify', 'verifyAndResetPassword')->name('password.phone.verify');
+    //   Route::post('/password/phone/verify', [ForgotPasswordController::class, 'verifyAndResetPassword'])->name('password.phone.verify');
+
 
     Route::get('/users/login', 'login')->name('user.login')->middleware('handle-demo-login');
     Route::get('/seller/login', 'login')->name('seller.login')->middleware('handle-demo-login');
@@ -115,8 +122,15 @@ Route::controller(HomeController::class)->group(function () {
     Route::post('/users/login/cart', 'cart_login')->name('cart.login.submit')->middleware('handle-demo-login');
     Route::post('/send-otp', 'sendOTP')->name('send-otp');
     Route::post('/verify-otp', 'verifyOTP')->name('verify-otp');
-    //Home Page
-    Route::get('/', 'index')->name('home');
+
+    // Route::get('/users/registration', 'registration')->name('user.registration')->middleware('handle-demo-login');
+    Route::post('/user/registration/submit', 'registrationSubmit')->name('user.registration.submit');
+
+    // Route::get('/new-page', 'new_page')->name('new_page');
+
+    Route::post('/import-data', 'import_data');
+
+
 
     Route::post('/home/section/featured', 'load_featured_section')->name('home.section.featured');
     Route::post('/home/section/todays-deal', 'load_todays_deal_section')->name('home.section.todays_deal');
@@ -147,7 +161,8 @@ Route::controller(HomeController::class)->group(function () {
     Route::get('/sellers', 'all_seller')->name('sellers');
     Route::get('/coupons', 'all_coupons')->name('coupons.all');
     Route::get('/inhouse', 'inhouse_products')->name('inhouse.all');
-
+    Route::get('/save-for-later', 'savelater')->name('save.for.later');
+    // Route::post('/save-for-later', [SaveLaterController::class, 'store'])->name('save.for.later');
 
     // Policies
     Route::get('/seller-policy', 'sellerpolicy')->name('sellerpolicy');
@@ -209,7 +224,7 @@ Route::controller(MercadopagoController::class)->group(function () {
     Route::any('/mercadopago/payment/done', 'paymentstatus')->name('mercadopago.done');
     Route::any('/mercadopago/payment/cancel', 'callback')->name('mercadopago.cancel');
 });
-//Mercadopago 
+//Mercadopago
 
 // SSLCOMMERZ Start
 Route::controller(SslcommerzController::class)->group(function () {

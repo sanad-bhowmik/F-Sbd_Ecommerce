@@ -1,5 +1,5 @@
 <div class="modal fade" id="login_modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-        aria-hidden="true">
+    aria-hidden="true">
     <div class="modal-dialog modal-dialog-zoom" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -13,19 +13,21 @@
                     <form class="form-default" role="form" action="{{ route('cart.login.submit') }}" method="POST">
                         @csrf
 
-                        @if (addon_is_activated('otp_system') && env('DEMO_MODE') != 'On')
-                            <!-- Phone -->
+                        @if (addon_is_activated('otp_system'))
+                            <!-- Phone Input -->
                             <div class="form-group phone-form-group mb-1">
                                 <input type="tel" id="phone-code"
                                     class="form-control{{ $errors->has('phone') ? ' is-invalid' : '' }}"
-                                    value="{{ old('phone') }}" placeholder="" name="phone" autocomplete="off">
+                                    value="{{ old('phone') }}" placeholder="Enter your phone number" name="phone"
+                                    autocomplete="off">
                             </div>
-                            <!-- Country Code -->
-                            <input type="hidden" name="country_code" value="">
+
+                            <!-- Country Code Hidden Input -->
+                            <input type="hidden" name="country_code" value="+88"> <!-- Set default to Bangladesh -->
+
                             <!-- Email -->
                             <div class="form-group email-form-group mb-1 d-none">
-                                <input type="email"
-                                    class="form-control {{ $errors->has('email') ? ' is-invalid' : '' }}"
+                                <input type="email" class="form-control {{ $errors->has('email') ? ' is-invalid' : '' }}"
                                     value="{{ old('email') }}" placeholder="{{ translate('Email') }}" name="email"
                                     id="email" autocomplete="off">
                                 @if ($errors->has('email'))
@@ -40,15 +42,14 @@
                                     onclick="toggleEmailPhone(this)"><i>*{{ translate('Use Email Instead') }}</i></button>
                             </div>
                         @else
-                            <!-- Use Email Instead -->
+                            <!-- Email -->
                             <div class="form-group">
-                                <input type="email"
-                                    class="form-control{{ $errors->has('email') ? ' is-invalid' : '' }}"
-                                    value="{{ old('email') }}" placeholder="{{ translate('Email') }}" name="email"
-                                    id="email" autocomplete="off">
-                                @if ($errors->has('email'))
+                                <input type="phone" class="form-control{{ $errors->has('phone') ? ' is-invalid' : '' }}"
+                                    value="{{ old('phone') }}" placeholder="{{ translate('Phone') }}" name="phone"
+                                    id="phone" autocomplete="off">
+                                @if ($errors->has('phone'))
                                     <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $errors->first('email') }}</strong>
+                                        <strong>{{ $errors->first('phone') }}</strong>
                                     </span>
                                 @endif
                             </div>
@@ -87,7 +88,7 @@
                         <p class="text-muted mb-0">{{ translate('Dont have an account?') }}</p>
                         <a href="{{ route('user.registration') }}">{{ translate('Register Now') }}</a>
                     </div>
-                    
+
                     <!-- Social Login -->
                     @if (get_setting('google_login') == 1 || get_setting('facebook_login') == 1 || get_setting('twitter_login') == 1 || get_setting('apple_login') == 1)
                         <div class="separator mb-3">
@@ -97,8 +98,7 @@
                             <!-- Facebook -->
                             @if (get_setting('facebook_login') == 1)
                                 <li class="list-inline-item">
-                                    <a href="{{ route('social.login', ['provider' => 'facebook']) }}"
-                                        class="facebook">
+                                    <a href="{{ route('social.login', ['provider' => 'facebook']) }}" class="facebook">
                                         <i class="lab la-facebook-f"></i>
                                     </a>
                                 </li>
@@ -106,8 +106,7 @@
                             <!-- Google -->
                             @if (get_setting('google_login') == 1)
                                 <li class="list-inline-item">
-                                    <a href="{{ route('social.login', ['provider' => 'google']) }}"
-                                        class="google">
+                                    <a href="{{ route('social.login', ['provider' => 'google']) }}" class="google">
                                         <i class="lab la-google"></i>
                                     </a>
                                 </li>
@@ -115,8 +114,7 @@
                             <!-- Twitter -->
                             @if (get_setting('twitter_login') == 1)
                                 <li class="list-inline-item">
-                                    <a href="{{ route('social.login', ['provider' => 'twitter']) }}"
-                                        class="twitter">
+                                    <a href="{{ route('social.login', ['provider' => 'twitter']) }}" class="twitter">
                                         <i class="lab la-twitter"></i>
                                     </a>
                                 </li>
@@ -124,8 +122,7 @@
                             <!-- Apple -->
                             @if (get_setting('apple_login') == 1)
                                 <li class="list-inline-item">
-                                    <a href="{{ route('social.login', ['provider' => 'apple']) }}"
-                                        class="apple">
+                                    <a href="{{ route('social.login', ['provider' => 'apple']) }}" class="apple">
                                         <i class="lab la-apple"></i>
                                     </a>
                                 </li>
