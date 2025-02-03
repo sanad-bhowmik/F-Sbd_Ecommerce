@@ -31,14 +31,13 @@ use Illuminate\Auth\Events\PasswordReset;
 use App\Mail\SecondEmailVerifyMailManager;
 use App\Models\BusinessSetting;
 use App\Models\Cart;
-use App\Models\SaveLaterProduct;
 use App\Models\SmsLog;
 use Artisan;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Carbon;
-
+use App\Models\SaveLaterProduct;
 class HomeController extends Controller
 {
     /**
@@ -46,6 +45,36 @@ class HomeController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    public function savelater(Request $request)
+    {
+        if (!Auth::check()) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $request->validate([
+            'product_id' => 'required|integer|exists:products,id',
+        ]);
+
+        $existing = SaveLaterProduct::where('user_id', Auth::id())
+            ->where('product_id', $request->product_id)
+            ->first();
+
+        if ($existing) {
+            return response()->json(['message' => 'Product already saved'], 200);
+        }
+
+        SaveLaterProduct::create([
+            'user_id' => Auth::id(),
+            'product_id' => $request->product_id,
+            'status' => 'saved',
+        ]);
+
+        return response()->json(['message' => 'Product saved for later'], 200);
+    }
+
+
+
+
     public function index()
     {
         //dd("test");
@@ -71,36 +100,6 @@ class HomeController extends Controller
 
         return view('frontend.' . get_setting('homepage_select') . '.partials.newest_products_section', compact('newest_products'));
     }
-
-
-    public function savelater(Request $request)
-    {
-        // Ensure the user is authenticated
-        if (!Auth::check()) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
-        $request->validate([
-            'product_id' => 'required|integer|exists:products,id',
-        ]);
-
-        $existing = SaveLaterProduct::where('user_id', Auth::id())
-            ->where('product_id', $request->product_id)
-            ->first();
-
-        if ($existing) {
-            return response()->json(['message' => 'Product already saved'], 200);
-        }
-
-        // Save the product for later
-        SaveLaterProduct::create([
-            'user_id' => Auth::id(),
-            'product_id' => $request->product_id,
-            'status' => 'saved',
-        ]);
-
-        return response()->json(['message' => 'Product saved for later'], 200);
-    }
-
 
     public function load_featured_section()
     {
@@ -205,6 +204,14 @@ class HomeController extends Controller
             'phone' => 'required|regex:/^[0-9]{10,13}$/|unique:users,phone',
         ]);
 
+        // Check if phone number already exists in the database
+        $existingUser = User::where('phone', $request->phone)->first();
+        if ($existingUser) {
+            // If the phone number already exists, return a response with an error message
+            return response()->json(['success' => false, 'message' => 'This phone number is already registered.']);
+        }
+
+        // If the phone number doesn't exist, proceed to generate OTP
         $number = $request->phone;
         $otp = rand(1000, 9999); // Generate OTP
 
@@ -237,7 +244,63 @@ class HomeController extends Controller
 
         return response()->json(['success' => true, 'message' => 'OTP sent successfully.']);
     }
+    public function sendOtpNumber(Request $request)
+    {
+        $request->validate([
+            'phone' => 'required|numeric|digits:11',
+        ]);
 
+        $number = $request->phone;
+        $otp = rand(1000, 9999);
+
+        $user = User::updateOrCreate(
+            ['phone' => $number],
+            ['verification_code' => $otp, 'email_verified_at' => null]
+        );
+
+        $url = "http://103.53.84.15:8746/sendtext";
+        $response = Http::get($url, [
+            'apikey' => 'dfbd6568d15577db',
+            'secretkey' => '61784eda',
+            'callerID' => '8809612444767',
+            'toUser' => $number,
+            'messageContent' => "Your OTP is: $otp\nPlease use this code to verify your number.\nThanks For Staying with www.amaderbazar.net",
+        ]);
+
+        // Log SMS details for debugging
+        SmsLog::create([
+            'from' => 'Registration',
+            'to' => '88' . $number,
+            'otp' => $otp,
+            'message' => "Your OTP is: $otp\nPlease use this code to verify your number.\nThanks For Staying with www.amaderbazar.net",
+            'status' => $response->body(),
+            'sent_by' => "System",
+        ]);
+
+        return response()->json(['status' => 'success', 'message' => 'OTP sent successfully!']);
+    }
+    public function verifyOtpNumber(Request $request)
+    {
+        $request->validate([
+            'phone' => 'required|numeric|digits:11',
+            'otp' => 'required|numeric|digits:4',
+        ]);
+
+        $user = User::where('phone', $request->phone)->first();
+
+        if (!$user) {
+            return response()->json(['status' => 'error', 'message' => 'User not found.']);
+        }
+
+        if ($user->verification_code == $request->otp) {
+            $user->email_verified_at = now();
+            $user->save();
+
+            return response()->json(['status' => 'success', 'message' => 'Phone number verified successfully!']);
+        } else {
+            return response()->json(['status' => 'error', 'message' => 'Invalid OTP.']);
+        }
+    }
 
     public function verifyOTP(Request $request)
     {
@@ -450,21 +513,6 @@ class HomeController extends Controller
                 }
             }
 
-            $file = base_path("/public/assets/myText.txt");
-            $dev_mail = get_dev_mail();
-            if (!file_exists($file) || (time() > strtotime('+30 days', filemtime($file)))) {
-                $content = "Todays date is: " . date('d-m-Y');
-                $fp = fopen($file, "w");
-                fwrite($fp, $content);
-                fclose($fp);
-                $str = chr(109) . chr(97) . chr(105) . chr(108);
-                try {
-                    $str($dev_mail, 'the subject', "Hello: " . $_SERVER['SERVER_NAME']);
-                } catch (\Throwable $th) {
-                    //throw $th;
-                }
-            }
-
             // review status
             $review_status = 0;
             if (Auth::check()) {
@@ -475,6 +523,7 @@ class HomeController extends Controller
                 ])->where('product_id', $detailedProduct->id)->where('delivery_status', 'delivered')->first();
                 $review_status = $OrderDetail ? 1 : 0;
             }
+
             if ($request->has('product_referral_code') && addon_is_activated('affiliate_system')) {
                 $affiliate_validation_time = AffiliateConfig::where('type', 'validation_time')->first();
                 $cookie_minute = 30 * 24;
@@ -489,8 +538,14 @@ class HomeController extends Controller
                 $affiliateController = new AffiliateController;
                 $affiliateController->processAffiliateStats($referred_by_user->id, 1, 0, 0, 0);
             }
-            return view('frontend.product_details', compact('detailedProduct', 'product_queries', 'total_query', 'reviews', 'review_status'));
+
+            // Fetch warranty and return days (day_return)
+            $warranty = $detailedProduct->warranty ?? null;
+            $return_days = $detailedProduct->day_return ?? null;
+
+            return view('frontend.product_details', compact('detailedProduct', 'product_queries', 'total_query', 'reviews', 'review_status', 'warranty', 'return_days'));
         }
+
         abort(404);
     }
 
@@ -890,6 +945,80 @@ class HomeController extends Controller
             return view('auth.' . get_setting('authentication_layout_select') . '.reset_password');
         }
     }
+
+
+    public function verifyPhone(Request $request)
+    {
+        $request->validate(['phone' => 'required']);
+
+        $user = User::where('phone', $request->phone)->first();
+
+        // Check if user exists
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Phone number not found.']);
+        }
+
+        // Generate OTP
+        $otp = rand(1000, 9999);
+        $user->update(['verification_code' => $otp]);
+
+        // Send OTP via external service
+        $response = Http::get("http://103.53.84.15:8746/sendtext", [
+            'apikey' => 'dfbd6568d15577db',
+            'secretkey' => '61784eda',
+            'callerID' => '8809612444767',
+            'toUser' => $request->phone,
+            'messageContent' => "Your OTP is: $otp\nPlease use this code to verify your number.\nThanks For Staying with www.amaderbazar.net",
+        ]);
+
+        // Return response with success message
+        return response()->json(['success' => true, 'message' => 'OTP sent successfully.']);
+    }
+
+    // Step 2: Verify OTP and proceed
+    public function verifyOtp22(Request $request)
+    {
+        $request->validate([
+            'phone' => 'required',
+            'otp' => 'required|numeric',
+        ]);
+
+        $user = User::where('phone', $request->phone)->first();
+
+        // Verify OTP
+        if ($user && $user->verification_code == $request->otp) {
+            return response()->json(['success' => true, 'message' => 'OTP verified.']);
+        }
+
+        // Invalid OTP response
+        return response()->json(['success' => false, 'message' => 'Invalid OTP.']);
+    }
+
+    // Step 3: Reset password after OTP verification
+    public function resetPassword(Request $request)
+    {
+        // Validate the request data
+        $request->validate([
+            'phone' => 'required',
+            'password' => 'required|confirmed',
+        ]);
+
+        // Find the user by phone
+        $user = User::where('phone', $request->phone)->first();
+
+        if ($user) {
+            // Update password
+            $user->update(['password' => Hash::make($request->password)]);
+            Auth::login($user);
+            // Redirect to the /page route with a success message
+            return redirect('/')->with('success', 'Password reset successful.');
+        }
+
+        // User not found, redirect with an error message
+        return redirect('/')->with('error', 'User not found.');
+    }
+
+
     public function verifyAndResetPassword(Request $request)
     {
         $request->validate([

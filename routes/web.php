@@ -107,11 +107,15 @@ Route::controller(VerificationController::class)->group(function () {
 Route::controller(HomeController::class)->group(function () {
     //Home Page
 
+    Route::post('/save-for-later', 'savelater')->name('save.for.later');
     Route::get('/', 'index')->name('home');
     Route::get('/email-change/callback', 'email_change_callback')->name('email_change.callback');
     Route::post('/password/reset/email/submit', 'reset_password_with_code')->name('password.update');
 
-    Route::post('/password/phone/verify', 'verifyAndResetPassword')->name('password.phone.verify');
+    Route::post('/password/phone/verify', [HomeController::class, 'verifyPhone'])->name('password.phone.verify');
+    Route::post('/password/otp/verify', [HomeController::class, 'verifyOtp22'])->name('password.otp.verify');
+    Route::post('/password/reset', [HomeController::class, 'resetPassword'])->name('password.reset');
+
     //   Route::post('/password/phone/verify', [ForgotPasswordController::class, 'verifyAndResetPassword'])->name('password.phone.verify');
 
 
@@ -161,8 +165,7 @@ Route::controller(HomeController::class)->group(function () {
     Route::get('/sellers', 'all_seller')->name('sellers');
     Route::get('/coupons', 'all_coupons')->name('coupons.all');
     Route::get('/inhouse', 'inhouse_products')->name('inhouse.all');
-    Route::get('/save-for-later', 'savelater')->name('save.for.later');
-    // Route::post('/save-for-later', [SaveLaterController::class, 'store'])->name('save.for.later');
+
 
     // Policies
     Route::get('/seller-policy', 'sellerpolicy')->name('sellerpolicy');
@@ -212,6 +215,7 @@ Route::controller(CartController::class)->group(function () {
     Route::post('/cart/addtocart', 'addToCart')->name('cart.addToCart');
     Route::post('/cart/removeFromCart', 'removeFromCart')->name('cart.removeFromCart');
     Route::post('/cart/updateQuantity', 'updateQuantity')->name('cart.updateQuantity');
+    Route::get('/cart/total', 'getCartTotal');
 });
 
 //Paypal START
@@ -265,9 +269,13 @@ Route::group(['middleware' => ['user', 'verified', 'unbanned']], function () {
         Route::post('/new-user-verification', 'new_verify')->name('user.new.verify');
         Route::post('/new-user-email', 'update_email')->name('user.change.email');
         Route::post('/user/update-profile', 'userProfileUpdate')->name('user.profile.update');
+        Route::post('/user/send-otp-number', 'sendOtpNumber')->name('user.send.otpNumber');
+        Route::post('/user/verify-otp-number', 'verifyOtpNumber')->name('user.verify.otpNumber');
+
     });
 
     Route::get('/all-notifications', [NotificationController::class, 'index'])->name('all-notifications');
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->middleware('auth')->name('notifications.markAsRead');
 });
 
 Route::group(['middleware' => ['customer', 'verified', 'unbanned']], function () {
@@ -302,12 +310,15 @@ Route::group(['middleware' => ['customer', 'verified', 'unbanned']], function ()
     });
 
     // Wishlist
-    Route::resource('wishlists', WishlistController::class);
+    Route::get('wishlists', WishlistController::class);
     Route::post('/wishlists/remove', [WishlistController::class, 'remove'])->name('wishlists.remove');
 
     //Follow
     Route::controller(FollowSellerController::class)->group(function () {
         Route::get('/followed-seller', 'index')->name('followed_seller');
+        Route::get('/save-later', 'savelater')->name('save_later');
+        Route::delete('/save-later/{id}', 'removesave')->name('save_later.remove');
+
         Route::get('/followed-seller/store', 'store')->name('followed_seller.store');
         Route::get('/followed-seller/remove', 'remove')->name('followed_seller.remove');
     });

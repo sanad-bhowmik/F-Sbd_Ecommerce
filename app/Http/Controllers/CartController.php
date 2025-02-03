@@ -41,7 +41,7 @@ class CartController extends Controller
     public function showCartModal(Request $request)
     {
         $product = Product::find($request->id);
-        return view('frontend.'.get_setting('homepage_select').'.partials.addToCart', compact('product'));
+        return view('frontend.' . get_setting('homepage_select') . '.partials.addToCart', compact('product'));
     }
 
     public function showCartModalAuction(Request $request)
@@ -56,24 +56,24 @@ class CartController extends Controller
         $check_auction_in_cart = CartUtility::check_auction_in_cart($carts);
         $product = Product::find($request->id);
         $carts = array();
-        
-        if($check_auction_in_cart && $product->auction_product == 0) {
+
+        if ($check_auction_in_cart && $product->auction_product == 0) {
             return array(
                 'status' => 0,
                 'cart_count' => count($carts),
-                'modal_view' => view('frontend.'.get_setting('homepage_select').'.partials.removeAuctionProductFromCart')->render(),
-                'nav_cart_view' => view('frontend.'.get_setting('homepage_select').'.partials.cart')->render(),
+                'modal_view' => view('frontend.' . get_setting('homepage_select') . '.partials.removeAuctionProductFromCart')->render(),
+                'nav_cart_view' => view('frontend.' . get_setting('homepage_select') . '.partials.cart')->render(),
             );
         }
-        
+
         $quantity = $request['quantity'];
 
         if ($quantity < $product->min_qty) {
             return array(
                 'status' => 0,
                 'cart_count' => count($carts),
-                'modal_view' => view('frontend.'.get_setting('homepage_select').'.partials.minQtyNotSatisfied', ['min_qty' => $product->min_qty])->render(),
-                'nav_cart_view' => view('frontend.'.get_setting('homepage_select').'.partials.cart')->render(),
+                'modal_view' => view('frontend.' . get_setting('homepage_select') . '.partials.minQtyNotSatisfied', ['min_qty' => $product->min_qty])->render(),
+                'nav_cart_view' => view('frontend.' . get_setting('homepage_select') . '.partials.cart')->render(),
             );
         }
 
@@ -92,16 +92,16 @@ class CartController extends Controller
                 return array(
                     'status' => 0,
                     'cart_count' => count($carts),
-                    'modal_view' => view('frontend.'.get_setting('homepage_select').'.partials.auctionProductAlredayAddedCart')->render(),
-                    'nav_cart_view' => view('frontend.'.get_setting('homepage_select').'.partials.cart')->render(),
+                    'modal_view' => view('frontend.' . get_setting('homepage_select') . '.partials.auctionProductAlredayAddedCart')->render(),
+                    'nav_cart_view' => view('frontend.' . get_setting('homepage_select') . '.partials.cart')->render(),
                 );
             }
             if ($product_stock->qty < $cart->quantity + $request['quantity']) {
                 return array(
                     'status' => 0,
                     'cart_count' => count($carts),
-                    'modal_view' => view('frontend.'.get_setting('homepage_select').'.partials.outOfStockCart')->render(),
-                    'nav_cart_view' => view('frontend.'.get_setting('homepage_select').'.partials.cart')->render(),
+                    'modal_view' => view('frontend.' . get_setting('homepage_select') . '.partials.outOfStockCart')->render(),
+                    'nav_cart_view' => view('frontend.' . get_setting('homepage_select') . '.partials.cart')->render(),
                 );
             }
             $quantity = $cart->quantity + $request['quantity'];
@@ -109,15 +109,15 @@ class CartController extends Controller
 
         $price = CartUtility::get_price($product, $product_stock, $request->quantity);
         $tax = CartUtility::tax_calculation($product, $price);
-        
+
         CartUtility::save_cart_data($cart, $product, $price, $tax, $quantity);
-        
+
         $carts = Cart::where('user_id', auth()->user()->id)->get();
         return array(
             'status' => 1,
             'cart_count' => count($carts),
-            'modal_view' => view('frontend.'.get_setting('homepage_select').'.partials.addedToCart', compact('product', 'cart'))->render(),
-            'nav_cart_view' => view('frontend.'.get_setting('homepage_select').'.partials.cart')->render(),
+            'modal_view' => view('frontend.' . get_setting('homepage_select') . '.partials.addedToCart', compact('product', 'cart'))->render(),
+            'nav_cart_view' => view('frontend.' . get_setting('homepage_select') . '.partials.cart')->render(),
         );
     }
 
@@ -135,8 +135,8 @@ class CartController extends Controller
 
         return array(
             'cart_count' => count($carts),
-            'cart_view' => view('frontend.'.get_setting('homepage_select').'.partials.cart_details', compact('carts'))->render(),
-            'nav_cart_view' => view('frontend.'.get_setting('homepage_select').'.partials.cart')->render(),
+            'cart_view' => view('frontend.' . get_setting('homepage_select') . '.partials.cart_details', compact('carts'))->render(),
+            'nav_cart_view' => view('frontend.' . get_setting('homepage_select') . '.partials.cart')->render(),
         );
     }
 
@@ -198,8 +198,8 @@ class CartController extends Controller
 
         return array(
             'cart_count' => count($carts),
-            'cart_view' => view('frontend.'.get_setting('homepage_select').'.partials.cart_details', compact('carts'))->render(),
-            'nav_cart_view' => view('frontend.'.get_setting('homepage_select').'.partials.cart')->render(),
+            'cart_view' => view('frontend.' . get_setting('homepage_select') . '.partials.cart_details', compact('carts'))->render(),
+            'nav_cart_view' => view('frontend.' . get_setting('homepage_select') . '.partials.cart')->render(),
         );
     }
 }

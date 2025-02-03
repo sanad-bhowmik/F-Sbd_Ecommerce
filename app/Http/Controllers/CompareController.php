@@ -24,24 +24,29 @@ class CompareController extends Controller
     //store comparing products ids in session
     public function addToCompare(Request $request)
     {
-        if($request->session()->has('compare')){
+        if ($request->session()->has('compare')) {
             $compare = $request->session()->get('compare', collect([]));
-            if(!$compare->contains($request->id)){
-                if(count($compare) == 3){
+            if (!$compare->contains($request->id)) {
+                if (count($compare) == 3) {
                     $compare->forget(0);
                     $compare->push($request->id);
-                }
-                else{
+                } else {
                     $compare->push($request->id);
                 }
             }
-        }
-        else{
+        } else {
             $compare = collect([$request->id]);
             $request->session()->put('compare', $compare);
         }
 
-        return view('frontend.'.get_setting('homepage_select').'.partials.compare');
+        return view('frontend.' . get_setting('homepage_select') . '.partials.compare');
+    }
+    // In CompareController.php
+
+    public function getCompareCount()
+    {
+        $compareCount = session('compare_items', []); // Adjust this based on your logic
+        return response()->json(['count' => count($compareCount)]);
     }
 
     public function details($unique_identifier)
@@ -50,7 +55,7 @@ class CompareController extends Controller
         $data['unique_identifier'] = $unique_identifier;
         $data['main_item'] = get_setting('item_name') ?? 'eCommerce';
         $request_data_json = json_encode($data);
-        
+
         $gate = "https://activation.activeitzone.com/check_addon_activation";
 
         $header = array(
@@ -74,5 +79,5 @@ class CompareController extends Controller
             translation_tables($unique_identifier);
             return redirect()->route('home');
         }
-    } 
+    }
 }

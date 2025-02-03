@@ -19,7 +19,19 @@ class SaveLaterProduct extends Model
 
     public $timestamps = false;
 
-    // If timestamps are used but have custom column names
-    // protected const CREATED_AT = 'created_at';
-    // protected const UPDATED_AT = 'updated_at';
+    /**
+     * Relationship with the User model
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Relationship with the Product model
+     */
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
 }

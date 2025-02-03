@@ -27,18 +27,26 @@
                                 <i class="fas fa-eye" id="togglePasswordIcon-login"></i>
                             </span>
                         </div>
-                        <div class="row mb-2">
+                        <div class="row mb-2 align-items-center">
+                            <!-- Remember Me Checkbox -->
                             <div class="col-6">
-                                <label class="aiz-checkbox">
-                                    <input type="checkbox" name="remember">
-                                    <span class="opacity-60">{{ translate('Remember Me') }}</span>
-                                </label>
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                                    <label class="form-check-label" for="remember">
+                                        <span class="opacity-80">{{ translate('Remember Me') }}</span>
+                                    </label>
+                                </div>
                             </div>
+
+                            <!-- Forgot Password Link -->
                             <div class="col-6 text-right">
                                 <a href="{{ route('password.request') }}"
-                                    class="text-reset opacity-60 hov-opacity-100 fs-14">{{ translate('Forgot password?') }}</a>
+                                    class="text-reset opacity-80 hov-opacity-100 fs-14">
+                                    {{ translate('Forgot password?') }}
+                                </a>
                             </div>
                         </div>
+
                         <div class="mb-5">
                             <button type="submit"
                                 class="btn btn-primary btn-block fw-600">{{ translate('Login') }}</button>
@@ -59,6 +67,7 @@
 
 
 <!-- Registration Modal -->
+<!-- Registration Modal -->
 <div class="modal fade" id="registration_modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
     aria-hidden="true">
     <div class="modal-dialog modal-dialog-zoom" role="document">
@@ -78,20 +87,6 @@
                                 <input type="tel" id="phone" name="phone" class="form-control"
                                     placeholder="Enter your phone number" autocomplete="off" required>
                             </div>
-                            <div class="form-group position-relative">
-                                <input type="password" id="password" name="password" class="form-control"
-                                    placeholder="Enter your password" required>
-                                <span class="password-toggle" onclick="togglePassword('password')">
-                                    <i class="fa fa-eye" id="toggle-password-icon"></i>
-                                </span>
-                            </div>
-                            <div class="form-group position-relative">
-                                <input type="password" id="password_confirmation" name="password_confirmation"
-                                    class="form-control" placeholder="Confirm your password" required>
-                                <span class="password-toggle" onclick="togglePassword('password_confirmation')">
-                                    <i class="fa fa-eye" id="toggle-password-confirmation-icon"></i>
-                                </span>
-                            </div>
                             <div class="mb-5">
                                 <button type="button" id="send-otp"
                                     class="btn btn-primary btn-block fw-600">{{ translate('Send OTP') }}</button>
@@ -106,7 +101,35 @@
                                 <button type="button" id="verify-otp"
                                     class="btn btn-primary btn-block fw-600">{{ translate('Verify OTP') }}</button>
                             </div>
+                            <div id="timer" class="text-center mt-3" style="font-size: 14px;">
+                                <p id="countdown"></p>
+                            </div>
                         </div>
+                        <div id="step3" style="display: none;">
+                            <div class="form-group">
+                                <input type="password" id="password" name="password" class="form-control"
+                                    placeholder="Enter your password" required>
+                            </div>
+                            <!-- Added the checkbox section here -->
+                            <div class="mb-3 upper-fields">
+                                <label class="aiz-checkbox">
+                                    <input type="checkbox" id="terms-checkbox" name="checkbox_example_1" required>
+                                    <span class="">
+                                        By signing up you agree to our
+                                        <a href="https://celcombazar.com/terms" class="fw-500">terms and conditions</a>
+                                    </span>
+                                    <span class="aiz-square-check"></span>
+                                </label>
+                            </div>
+                            <div class="mb-5">
+                                <button type="button" id="register-btn" class="btn btn-primary btn-block fw-600"
+                                    style="display: none;">
+                                    {{ translate('Register') }}
+                                </button>
+                            </div>
+                        </div>
+
+
                     </form>
                     <div class="text-center">
                         <p class="text-muted mb-0">{{ translate('Already have an account?') }}</p>
@@ -121,7 +144,6 @@
     </div>
 </div>
 
-
 <style>
     .password-toggle {
         position: absolute;
@@ -135,6 +157,18 @@
     .password-toggle:hover {
         color: #000;
     }
+
+    #countdown {
+        font-size: 14px;
+        background-color: rgba(0, 255, 0, 0.2);
+        /* Transparent green */
+        color: #006400;
+        /* Dark green text */
+        padding: 5px;
+        border-radius: 5px;
+        display: inline-block;
+        font-weight: bold;
+    }
 </style>
 
 <!-- Toastify.js CSS -->
@@ -143,41 +177,9 @@
 <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const togglePasswordIcon = document.getElementById('togglePasswordIcon-login');
-        const passwordInput = document.getElementById('password-login');
-
-        togglePasswordIcon.addEventListener('click', function () {
-            // Toggle password visibility
-            const isPasswordVisible = passwordInput.getAttribute('type') === 'password';
-            passwordInput.setAttribute('type', isPasswordVisible ? 'text' : 'password');
-
-            // Toggle icon
-            this.classList.toggle('fa-eye');
-            this.classList.toggle('fa-eye-slash');
-        });
-    });
-    function togglePassword(fieldId) {
-        const passwordField = document.getElementById(fieldId);
-        const icon = document.querySelector(`#toggle-${fieldId}-icon`);
-        if (passwordField.type === 'password') {
-            passwordField.type = 'text';
-            icon.classList.remove('fa-eye');
-            icon.classList.add('fa-eye-slash');
-        } else {
-            passwordField.type = 'password';
-            icon.classList.remove('fa-eye-slash');
-            icon.classList.add('fa-eye');
-        }
-    }
-
-    let timer; // Timer variable
-
     // Handle "Send OTP" button
     document.getElementById('send-otp').addEventListener('click', function () {
         const phone = document.getElementById('phone').value;
-        const password = document.getElementById('password').value;
-        const passwordConfirmation = document.getElementById('password_confirmation').value;
 
         fetch('{{ route('send-otp') }}', {
             method: 'POST',
@@ -185,20 +187,23 @@
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
             },
-            body: JSON.stringify({ phone, password, password_confirmation: passwordConfirmation }),
+            body: JSON.stringify({ phone }),
         })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     showToast('OTP sent successfully. Please verify.', 'success');
+                    // Hide step1 and show step2
                     document.getElementById('step1').style.display = 'none';
                     document.getElementById('step2').style.display = 'block';
-
-                    // Start 45-second timer
-                    startTimer(60);
+                    startTimer(45);
                 } else {
                     showToast(data.message || 'An error occurred.', 'error');
                 }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Number Already Exit.', 'error');
             });
     });
 
@@ -218,45 +223,66 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    showToast('Registration complete. You are now logged in.', 'success');
-                    location.reload();
+                    showToast('OTP verified successfully.', 'success');
+                    // Hide step2 and show step3 (password input)
+                    document.getElementById('step2').style.display = 'none';
+                    document.getElementById('step3').style.display = 'block';
+
                 } else {
-                    showToast(data.message || 'An error occurred.', 'error');
+                    showToast(data.message || 'Invalid OTP. Please try again.', 'error');
                 }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('An error occurred while verifying OTP. Please try again later.', 'error');
             });
     });
 
-    // Timer function
-    function startTimer(duration) {
-        const resendButton = document.getElementById('send-otp');
-        let timerDisplay = document.getElementById('timer-display');
+    // Get the checkbox and button elements
+    const termsCheckbox = document.getElementById('terms-checkbox');
+    const registerBtn = document.getElementById('register-btn');
 
-        if (!timerDisplay) {
-            timerDisplay = document.createElement('div');
-            timerDisplay.id = 'timer-display';
-            timerDisplay.className = 'text-center mt-3 alert alert-info';
-            document.getElementById('step2').appendChild(timerDisplay);
+    // Listen for changes on the checkbox
+    termsCheckbox.addEventListener('change', function () {
+        if (this.checked) {
+            // Show the "Register" button if the checkbox is checked
+            registerBtn.style.display = 'block';
+        } else {
+            // Hide the "Register" button if the checkbox is unchecked
+            registerBtn.style.display = 'none';
         }
+    });
 
-        let timeLeft = duration;
+    // Handle "Register" button click
+    registerBtn.addEventListener('click', function () {
+        const phone = document.getElementById('phone').value;
+        const otp = document.getElementById('otp').value;
+        const password = document.getElementById('password').value;
 
-        // Disable the resend button
-        resendButton.disabled = true;
-        resendButton.textContent = 'Resend OTP (' + timeLeft + 's)';
+        fetch('{{ route('user.registration.submit') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            },
+            body: JSON.stringify({ phone, otp, password }),
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('Registration successful.', 'success');
+                    location.reload();
+                    // Redirect or close the modal
+                } else {
+                    showToast(data.message || 'Registration failed. Please try again.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('An error occurred while registering. Please try again later.', 'error');
+            });
+    });
 
-        timer = setInterval(() => {
-            timeLeft--;
-            resendButton.textContent = 'Resend OTP (' + timeLeft + 's)';
-            timerDisplay.textContent = `You can resend the OTP in ${timeLeft} seconds.`;
-
-            if (timeLeft <= 0) {
-                clearInterval(timer);
-                resendButton.disabled = false;
-                resendButton.textContent = 'Resend OTP';
-                timerDisplay.remove(); // Remove the timer display when it ends
-            }
-        }, 1000);
-    }
 
     // Show Toast Function
     function showToast(message, type) {
@@ -270,6 +296,27 @@
             backgroundColor: bgColor,
         }).showToast();
     }
+    function startTimer(seconds) {
+        let timer = seconds;
+        const countdownElement = document.getElementById('countdown');
 
+        // Display the initial time
+        countdownElement.innerText = `You have ${timer} seconds to verify your OTP.`;
 
+        const interval = setInterval(function () {
+            timer--;
+            countdownElement.innerText = `You have ${timer} seconds to verify your OTP.`;
+
+            if (timer <= 0) {
+                clearInterval(interval); // Stop the timer
+                countdownElement.innerText = 'OTP expired. Please request a new OTP.';
+                // Optionally, disable the verify OTP button or show a retry button
+                document.getElementById('verify-otp').disabled = true;
+                setTimeout(() => {
+                    // Optionally, re-enable the button after some time, or show retry option
+                    document.getElementById('verify-otp').disabled = false;
+                }, 3000); // Re-enable the button after 3 seconds
+            }
+        }, 1000); // Update every second
+    }
 </script>

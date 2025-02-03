@@ -1,38 +1,85 @@
-<section style="display: flex;">
-    <div class="text-left" style="margin-left: -13%;">
-        <!-- Product Name -->
-        <h2 class="mb-4 fs-16 fw-700 text-dark">
-            {{ $detailedProduct->getTranslation('name') }}
-        </h2>
+<section style="" id="my-section">
+    <style>
+        @media (min-width: 1024px) and (max-width: 1920px) {
+            #my-section {
+                display: flex;
+                margin-left: -13%;
+            }
 
-        <div class="row align-items-center mb-3">
-            <!-- Review -->
-            @if ($detailedProduct->auction_product != 1)
-                                    <div class="col-12">
-                                        @php
-                                            $total = 0;
-                                            $total += $detailedProduct->reviews->count();
-                                        @endphp
-                                        <span class="rating rating-mr-1">
-                                            {{ renderStarRating($detailedProduct->rating) }}
-                                        </span>
-                                        <span class="ml-1 opacity-50 fs-14">({{ $total }}
-                                            {{ translate('reviews') }})</span>
-                                    </div>
-            @endif
-            <!-- Estimate Shipping Time -->
-            @if ($detailedProduct->est_shipping_days)
-                <div class="col-auto fs-14 mt-1">
-                    <small class="mr-1 opacity-50 fs-14">{{ translate('Estimate Shipping Time') }}:</small>
-                    <span class="fw-500">{{ $detailedProduct->est_shipping_days }} {{ translate('Days') }}</span>
-                </div>
-            @endif
-            <!-- In stock -->
-            @if ($detailedProduct->digital == 1)
-                <div class="col-12 mt-1">
-                    <span class="badge badge-md badge-inline badge-pill badge-success">{{ translate('In stock') }}</span>
-                </div>
-            @endif
+            .aiz-share {
+                margin-left: 27px;
+            }
+
+            .text-rig {
+                position: absolute;
+                text-align: left;
+            }
+
+            .text-ld {}
+        }
+
+        @media (max-width: 768px) {
+            #my-section {}
+
+            .text-rig {
+                font-family: Arial, sans-serif !important;
+                line-height: 2.6 !important;
+                ;
+                padding: 20px !important;
+                ;
+                background-color: #d7d7d74a !important;
+                max-width: 400px !important;
+                /*position: absolute;*/
+                top: 3px !important;
+                left: 51% !important;
+                z-index: 999 !important;
+                margin-top: 19px !important;
+                text-align: left !important;
+            }
+
+            .aiz-mobile-bottom-nav {
+                display: none !important;
+            }
+        }
+    </style>
+
+    <div class="text-left" style="">
+        <div id='text-ld'>
+            <!-- Product Name -->
+            <h2 class="mb-4 fs-16 fw-700 text-dark" style="width: 330px;line-height: 22px;">
+                {{ $detailedProduct->getTranslation('name') }}
+            </h2>
+
+            <div class="row align-items-center mb-3">
+                <!-- Review -->
+                @if ($detailedProduct->auction_product != 1)
+                                <div class="col-12">
+                                    @php
+                                        $total = 0;
+                                        $total += $detailedProduct->reviews->count();
+                                    @endphp
+                                    <span class="rating rating-mr-1">
+                                        {{ renderStarRating($detailedProduct->rating) }}
+                                    </span>
+                                    <span class="ml-1 opacity-50 fs-14">({{ $total }}
+                                        {{ translate('reviews') }})</span>
+                                </div>
+                @endif
+                <!-- Estimate Shipping Time -->
+                @if ($detailedProduct->est_shipping_days)
+                    <div class="col-auto fs-14 mt-1">
+                        <small class="mr-1 opacity-50 fs-14">{{ translate('Estimate Shipping Time') }}:</small>
+                        <span class="fw-500">{{ $detailedProduct->est_shipping_days }} {{ translate('Days') }}</span>
+                    </div>
+                @endif
+                <!-- In stock -->
+                @if ($detailedProduct->digital == 1)
+                    <div class="col-12 mt-1">
+                        <span
+                            class="badge badge-md badge-inline badge-pill badge-success">{{ translate('In stock') }}</span>
+                    </div>
+                @endif
+            </div>
         </div>
         <div class="row align-items-center">
             @if(get_setting('product_query_activation') == 1)
@@ -64,52 +111,123 @@
                 @if ($detailedProduct->auction_product != 1)
                     <div class="d-flex">
                         <!-- Add to wishlist button -->
-                        <a href="javascript:void(0)" onclick="addToWishList({{ $detailedProduct->id }})"
-                            class="mr-3 fs-14 text-dark opacity-60 has-transitiuon hov-opacity-100">
-                            <i class="la la-heart-o mr-1"></i>
-                                            {{ translate('Add to Wishlist') }}
-                        </a>
-                        <!-- Add to compare button -->
-                        <a href="javascript:void(0)" onclick="addToCompare({{ $detailedProduct->id }})"
-                            class="fs-14 text-dark opacity-60 has-transitiuon hov-opacity-100">
-                            <i class="las la-sync mr-1"></i>
-                                            {{ translate('Add to Compare') }}
-                        </a>
-                        <a href="javascript:void(0)" onclick="saveForLater({{ $detailedProduct->id }})"
-                            class="fs-14 text-dark opacity-60 has-transitiuon hov-opacity-100">
-                            <i class="fa-solid fa-plus ml-2"></i>
-                                                {{ translate('Save for Later') }}
-                        </a>
+                        <!-- Links for Desktop -->
+                        <div class="d-none d-md-block">
+                            <a href="javascript:void(0)" onclick="addToWishList({{ $detailedProduct->id }})"
+                                class="mr-3 fs-14 text-dark opacity-60 has-transition hov-opacity-100">
+                                <i class="la la-heart-o mr-1"></i>
+                                {{ translate('Add to Wishlist') }}
+                            </a>
+                            <a href="javascript:void(0)" onclick="addToCompare({{ $detailedProduct->id }})"
+                                class="fs-14 text-dark opacity-60 has-transition hov-opacity-100">
+                                <i class="las la-sync mr-1"></i>
+                                {{ translate('Add to Compare') }}
+                            </a>
+                            <a href="javascript:void(0)" onclick="saveForLater({{ $detailedProduct->id }})"
+                                class="fs-14 text-dark opacity-60 has-transition hov-opacity-100">
+                                <i class="fa-solid fa-plus ml-2"></i>
+                                {{ translate('Save for Later') }}
+                            </a>
+                        </div>
+
+                        <!-- Icons for Mobile (Fixed on Right Side) -->
+                        <div class="d-block d-md-none fixed-right-icons">
+                            <div class="d-flex flex-column align-items-end">
+                                <a href="javascript:void(0)" onclick="addToWishList({{ $detailedProduct->id }})"
+                                    class="icon-circle mb-2">
+                                    <i class="la la-heart-o"></i>
+                                </a>
+                                <a href="javascript:void(0)" onclick="addToCompare({{ $detailedProduct->id }})"
+                                    class="icon-circle mb-2">
+                                    <i class="las la-sync"></i>
+                                </a>
+                                <a href="javascript:void(0)" onclick="saveForLater({{ $detailedProduct->id }})"
+                                    class="icon-circle">
+                                    <i class="fa-solid fa-plus"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                        <style>
+                            /* Fixed Icons for Mobile */
+                            .fixed-right-icons {
+                                position: absolute;
+                                right: 15px;
+                                bottom: 80px;
+                                z-index: 9999;
+                                /* High value to ensure it's on top */
+                            }
+
+                            /* Icon Circle Styling */
+                            .icon-circle {
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                width: 40px;
+                                height: 40px;
+                                background-color: #fff;
+                                border-radius: 50%;
+                                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                                text-decoration: none;
+                                color: #000;
+                                opacity: 0.6;
+                                transition: opacity 0.3s ease, transform 0.3s ease;
+                            }
+
+                            .icon-circle:hover {
+                                opacity: 1;
+                                transform: scale(1.1);
+                            }
+
+                            /* Ensure the icons don't overlap with other content */
+                            @media (max-width: 767.98px) {
+
+                                /* Ensure body is not hiding the icons */
+                                body {
+                                    padding-right: 60px;
+                                    /* Adjust based on the width of your fixed icons */
+                                }
+
+                                /* Add this to your parent container if other content overlaps */
+                                .main-content {
+                                    position: relative;
+                                    /* Ensure the content stack is below */
+                                    z-index: 1;
+                                    /* Ensure content is behind fixed icons */
+                                }
+                            }
+                        </style>
+
                         <script>
                             function saveForLater(productId) {
                                 $.ajax({
-                                url: '{{ route("save.for.later") }}',
-                            type: 'POST',
-                                data: {
-                                product_id: productId,
-                                    _token: '{{ csrf_token() }}'
-                            },
-                            success: function(response) {
-                                showToast(response.message, 'success'); // Show success toast
-                            },
-                            error: function(xhr) {
-                                let errorMessage = xhr.status === 401
-                                    ? 'Please login to save products for later.'
-                                    : 'Something went wrong. Please try again.';
+                                    url: '{{ route("save.for.later") }}',
+                                    type: 'POST',
+                                    data: {
+                                        product_id: productId,
+                                        _token: '{{ csrf_token() }}'
+                                    },
+                                    success: function (response) {
+                                        showToast(response.message, 'success'); // Show success toast
+                                    },
+                                    error: function (xhr) {
+                                        let errorMessage = xhr.status === 401
+                                            ? 'Please login to save products for later.'
+                                            : 'Something went wrong. Please try again.';
 
-                                showToast(errorMessage, 'error'); // Show error toast
+                                        showToast(errorMessage, 'error'); // Show error toast
+                                    }
+                                });
                             }
-                            });
-                        }
                             function showToast(message, type = 'success') {
                                 const container = document.getElementById('toast-container');
 
                                 const toast = document.createElement('div');
                                 toast.className = `toast ${type}`;
                                 toast.innerHTML = `
-                                <i class="${type === 'success' ? 'la la-check-circle' : 'la la-times-circle'}"></i>
-                                ${message}
-                            `;
+                                                                    <i class="${type === 'success' ? 'la la-check-circle' : 'la la-times-circle'}"></i>
+                                                                    ${message}
+                                                                `;
 
                                 container.appendChild(toast);
                                 setTimeout(() => {
@@ -201,7 +319,7 @@
                     <a href="{{ route('shop.visit', $detailedProduct->user->shop->slug) }}"
                         class="text-reset hov-text-primary fs-14 fw-700">{{ $detailedProduct->user->shop->name }}</a>
                 @else
-                    <p class="mb-0 fs-14 fw-700">{{ translate('Inhouse product') }}</p>
+                    <!--<p class="mb-0 fs-14 fw-700">{{ translate('Inhouse product') }}</p>-->
                 @endif
             </div>
             <!-- Messase to seller -->
@@ -251,64 +369,65 @@
 
         <!-- For auction product -->
         @if ($detailedProduct->auction_product)
-                        <div class="row no-gutters mb-3">
+                <div class="row no-gutters mb-3">
+                    <div class="col-sm-2">
+                        <div class="text-secondary fs-14 fw-400 mt-1">{{ translate('Auction Will End') }}</div>
+                    </div>
+                    <div class=" col-sm-10">
+                        @if ($detailedProduct->auction_end_date > strtotime('now'))
+                            <div class="aiz-count-down align-items-center"
+                                data-date="{{ date('Y/m/d H:i:s', $detailedProduct->auction_end_date) }}"></div>
+                        @else
+                            <p>{{ translate('Ended') }}</p>
+                        @endif
+
+                    </div>
+                </div>
+
+                <div class="row no-gutters mb-3">
+                    <div class="col-sm-2">
+                        <div class="text-secondary fs-14 fw-400 mt-1">{{ translate('Starting Bid') }}</div>
+                    </div>
+                    <div class=" col-sm-10">
+                        <span class="opacity-50 fs-20">
+                            {{ single_price($detailedProduct->starting_bid) }}
+                        </span>
+                        @if ($detailedProduct->unit != null)
+                            <span class="opacity-70">/{{ $detailedProduct->getTranslation('unit') }}</span>
+                        @endif
+                    </div>
+                </div>
+
+                @if (
+                        Auth::check() &&
+                        Auth::user()->product_bids->where('product_id', $detailedProduct->id)->first() != null
+                    )
+                        <div class=" row no-gutters mb-3">
                             <div class="col-sm-2">
-                                <div class="text-secondary fs-14 fw-400 mt-1">{{ translate('Auction Will End') }}</div>
-                                            </div>
-                                            <div class=" col-sm-10">
-                                            @if ($detailedProduct->auction_end_date > strtotime('now'))
-                                                <div class="aiz-count-down align-items-center" data-date="{{ date('Y/m/d H:i:s', $detailedProduct->auction_end_date) }}"></div>
-                                            @else
-                                                 <p>{{ translate('Ended') }}</p>
-                                            @endif
-
-                                </div>
+                                <div class="text-secondary fs-14 fw-400 mt-1">{{ translate('My Bidded Amount') }}</div>
                             </div>
+                            <div class=" col-sm-10">
+                                <span class="opacity-50 fs-20">
+                                    {{ single_price(Auth::user()->product_bids->where('product_id', $detailedProduct->id)->first()->amount) }}
+                                </span>
+                            </div>
+                        </div>
+                        <hr>
+                @endif
 
-                            <div class="row no-gutters mb-3">
-                                <div class="col-sm-2">
-                                    <div class="text-secondary fs-14 fw-400 mt-1">{{ translate('Starting Bid') }}</div>
-                                            </div>
-                                            <div class=" col-sm-10">
-                                        <span class="opacity-50 fs-20">
-                                                    {{ single_price($detailedProduct->starting_bid) }}
-                                        </span>
-                                                @if ($detailedProduct->unit != null)
-                                                    <span class="opacity-70">/{{ $detailedProduct->getTranslation('unit') }}</span>
-                                                @endif
-                                            </div>
-                                        </div>
-
-                                        @if (
-                                                Auth::check() &&
-                                                Auth::user()->product_bids->where('product_id', $detailedProduct->id)->first() != null
-                                            )
-                                                                                                                        <div class=" row no-gutters mb-3">
-                                                                                                    <div class="col-sm-2">
-                                                                                                        <div class="text-secondary fs-14 fw-400 mt-1">{{ translate('My Bidded Amount') }}</div>
-                                                                                                                            </div>
-                                                                                                                            <div class=" col-sm-10">
-                                                                                                            <span class="opacity-50 fs-20">
-                                                                                                                                        {{ single_price(Auth::user()->product_bids->where('product_id', $detailedProduct->id)->first()->amount) }}
-                                                                                                            </span>
-                                                                                                        </div>
-                                                                                                    </div>
-                                                                                                    <hr>
-                                        @endif
-
-                                                    @php    $highest_bid = $detailedProduct->bids->max('amount'); @endphp
-                                            <div class="row no-gutters my-2 mb-3">
-                                                <div class="col-sm-2">
-                                                    <div class="text-secondary fs-14 fw-400 mt-1">{{ translate('Highest Bid') }}</div>
-                                            </div>
-                                            <div class=" col-sm-10">
-                                                        <strong class="h3 fw-600 text-primary">
-                                                                    @if ($highest_bid != null)
-                                                                        {{ single_price($highest_bid) }}
-                                                                    @endif
-                                                        </strong>
-                                                    </div>
-                                                </div>
+                @php $highest_bid = $detailedProduct->bids->max('amount'); @endphp
+                <div class="row no-gutters my-2 mb-3">
+                    <div class="col-sm-2">
+                        <div class="text-secondary fs-14 fw-400 mt-1">{{ translate('Highest Bid') }}</div>
+                    </div>
+                    <div class=" col-sm-10">
+                        <strong class="h3 fw-600 text-primary">
+                            @if ($highest_bid != null)
+                                {{ single_price($highest_bid) }}
+                            @endif
+                        </strong>
+                    </div>
+                </div>
         @else
             <!-- Without auction product -->
             @if ($detailedProduct->wholesale_product == 1)
@@ -350,8 +469,7 @@
                                 </del>
                                 <!-- Unit -->
                                 @if ($detailedProduct->unit != null)
-                                    <span
-                                        class="opacity-70 ml-1">/{{ $detailedProduct->getTranslation('unit') }}</span>
+                                    <span class="opacity-70 ml-1">/{{ $detailedProduct->getTranslation('unit') }}</span>
                                 @endif
                                 <!-- Discount percentage -->
                                 @if (discount_in_percentage($detailedProduct) > 0)
@@ -362,29 +480,21 @@
                                 @if (addon_is_activated('club_point') && $detailedProduct->earn_point > 0)
                                     <div class="ml-2 bg-secondary-base d-flex justify-content-center align-items-center px-3 py-1"
                                         style="width: fit-content;">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
-                                            viewBox="0 0 12 12">
-                                            <g id="Group_23922" data-name="Group 23922"
-                                                transform="translate(-973 -633)">
-                                                <circle id="Ellipse_39" data-name="Ellipse 39" cx="6" cy="6"
-                                                    r="6" transform="translate(973 633)" fill="#fff" />
-                                                <g id="Group_23920" data-name="Group 23920"
-                                                    transform="translate(973 633)">
-                                                    <path id="Path_28698" data-name="Path 28698"
-                                                        d="M7.667,3H4.333L3,5,6,9,9,5Z"
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12">
+                                            <g id="Group_23922" data-name="Group 23922" transform="translate(-973 -633)">
+                                                <circle id="Ellipse_39" data-name="Ellipse 39" cx="6" cy="6" r="6"
+                                                    transform="translate(973 633)" fill="#fff" />
+                                                <g id="Group_23920" data-name="Group 23920" transform="translate(973 633)">
+                                                    <path id="Path_28698" data-name="Path 28698" d="M7.667,3H4.333L3,5,6,9,9,5Z"
                                                         transform="translate(0 0)" fill="#f3af3d" />
-                                                    <path id="Path_28699" data-name="Path 28699"
-                                                        d="M5.33,3h-1L3,5,6,9,4.331,5Z"
-                                                        transform="translate(0 0)" fill="#f3af3d"
-                                                        opacity="0.5" />
-                                                    <path id="Path_28700" data-name="Path 28700"
-                                                        d="M12.666,3h1L15,5,12,9l1.664-4Z"
+                                                    <path id="Path_28699" data-name="Path 28699" d="M5.33,3h-1L3,5,6,9,4.331,5Z"
+                                                        transform="translate(0 0)" fill="#f3af3d" opacity="0.5" />
+                                                    <path id="Path_28700" data-name="Path 28700" d="M12.666,3h1L15,5,12,9l1.664-4Z"
                                                         transform="translate(-5.995 0)" fill="#f3af3d" />
                                                 </g>
                                             </g>
                                         </svg>
-                                        <small
-                                            class="fs-11 fw-500 text-white ml-2">{{ translate('Club Point') }}:
+                                        <small class="fs-11 fw-500 text-white ml-2">{{ translate('Club Point') }}:
                                             {{ $detailedProduct->earn_point }}</small>
                                     </div>
                                 @endif
@@ -404,36 +514,27 @@
                                 </strong>
                                 <!-- Unit -->
                                 @if ($detailedProduct->unit != null)
-                                    <span
-                                        class="opacity-70">/{{ $detailedProduct->getTranslation('unit') }}</span>
+                                    <span class="opacity-70">/{{ $detailedProduct->getTranslation('unit') }}</span>
                                 @endif
                                 <!-- Club Point -->
                                 @if (addon_is_activated('club_point') && $detailedProduct->earn_point > 0)
                                     <div class="ml-2 bg-secondary-base d-flex justify-content-center align-items-center px-3 py-1"
                                         style="width: fit-content;">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
-                                            viewBox="0 0 12 12">
-                                            <g id="Group_23922" data-name="Group 23922"
-                                                transform="translate(-973 -633)">
-                                                <circle id="Ellipse_39" data-name="Ellipse 39" cx="6" cy="6"
-                                                    r="6" transform="translate(973 633)" fill="#fff" />
-                                                <g id="Group_23920" data-name="Group 23920"
-                                                    transform="translate(973 633)">
-                                                    <path id="Path_28698" data-name="Path 28698"
-                                                        d="M7.667,3H4.333L3,5,6,9,9,5Z"
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12">
+                                            <g id="Group_23922" data-name="Group 23922" transform="translate(-973 -633)">
+                                                <circle id="Ellipse_39" data-name="Ellipse 39" cx="6" cy="6" r="6"
+                                                    transform="translate(973 633)" fill="#fff" />
+                                                <g id="Group_23920" data-name="Group 23920" transform="translate(973 633)">
+                                                    <path id="Path_28698" data-name="Path 28698" d="M7.667,3H4.333L3,5,6,9,9,5Z"
                                                         transform="translate(0 0)" fill="#f3af3d" />
-                                                    <path id="Path_28699" data-name="Path 28699"
-                                                        d="M5.33,3h-1L3,5,6,9,4.331,5Z"
-                                                        transform="translate(0 0)" fill="#f3af3d"
-                                                        opacity="0.5" />
-                                                    <path id="Path_28700" data-name="Path 28700"
-                                                        d="M12.666,3h1L15,5,12,9l1.664-4Z"
+                                                    <path id="Path_28699" data-name="Path 28699" d="M5.33,3h-1L3,5,6,9,4.331,5Z"
+                                                        transform="translate(0 0)" fill="#f3af3d" opacity="0.5" />
+                                                    <path id="Path_28700" data-name="Path 28700" d="M12.666,3h1L15,5,12,9l1.664-4Z"
                                                         transform="translate(-5.995 0)" fill="#f3af3d" />
                                                 </g>
                                             </g>
                                         </svg>
-                                        <small
-                                            class="fs-11 fw-500 text-white ml-2">{{ translate('Club Point') }}:
+                                        <small class="fs-11 fw-500 text-white ml-2">{{ translate('Club Point') }}:
                                             {{ $detailedProduct->earn_point }}</small>
                                     </div>
                                 @endif
@@ -454,36 +555,27 @@
                                     </strong>
                                     <!-- Unit -->
                                     @if ($detailedProduct->unit != null)
-                                        <span
-                                            class="opacity-70">/{{ $detailedProduct->getTranslation('unit') }}</span>
+                                        <span class="opacity-70">/{{ $detailedProduct->getTranslation('unit') }}</span>
                                     @endif
                                     <!-- Club Point -->
                                     @if (addon_is_activated('club_point') && $detailedProduct->earn_point > 0)
                                         <div class="ml-2 bg-secondary-base d-flex justify-content-center align-items-center px-3 py-1"
                                             style="width: fit-content;">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
-                                                viewBox="0 0 12 12">
-                                                <g id="Group_23922" data-name="Group 23922"
-                                                    transform="translate(-973 -633)">
-                                                    <circle id="Ellipse_39" data-name="Ellipse 39" cx="6" cy="6"
-                                                        r="6" transform="translate(973 633)" fill="#fff" />
-                                                    <g id="Group_23920" data-name="Group 23920"
-                                                        transform="translate(973 633)">
-                                                        <path id="Path_28698" data-name="Path 28698"
-                                                            d="M7.667,3H4.333L3,5,6,9,9,5Z"
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12">
+                                                <g id="Group_23922" data-name="Group 23922" transform="translate(-973 -633)">
+                                                    <circle id="Ellipse_39" data-name="Ellipse 39" cx="6" cy="6" r="6"
+                                                        transform="translate(973 633)" fill="#fff" />
+                                                    <g id="Group_23920" data-name="Group 23920" transform="translate(973 633)">
+                                                        <path id="Path_28698" data-name="Path 28698" d="M7.667,3H4.333L3,5,6,9,9,5Z"
                                                             transform="translate(0 0)" fill="#f3af3d" />
-                                                        <path id="Path_28699" data-name="Path 28699"
-                                                            d="M5.33,3h-1L3,5,6,9,4.331,5Z"
-                                                            transform="translate(0 0)" fill="#f3af3d"
-                                                            opacity="0.5" />
-                                                        <path id="Path_28700" data-name="Path 28700"
-                                                            d="M12.666,3h1L15,5,12,9l1.664-4Z"
+                                                        <path id="Path_28699" data-name="Path 28699" d="M5.33,3h-1L3,5,6,9,4.331,5Z"
+                                                            transform="translate(0 0)" fill="#f3af3d" opacity="0.5" />
+                                                        <path id="Path_28700" data-name="Path 28700" d="M12.666,3h1L15,5,12,9l1.664-4Z"
                                                             transform="translate(-5.995 0)" fill="#f3af3d" />
                                                     </g>
                                                 </g>
                                             </svg>
-                                            <small
-                                                class="fs-11 fw-500 text-white ml-2">{{ translate('Club Point') }}:
+                                            <small class="fs-11 fw-500 text-white ml-2">{{ translate('Club Point') }}:
                                                 {{ $detailedProduct->earn_point }}</small>
                                         </div>
                                     @endif
@@ -496,369 +588,452 @@
             @endif
         @endif
 
-                                @if ($detailedProduct->auction_product != 1)
-                                                                                        <form id="option-choice-form">
-                                                                                            @csrf
-                                                                                            <input type="hidden" name="id" value="{{ $detailedProduct->id }}">
+        @if ($detailedProduct->auction_product != 1)
+            <form id="option-choice-form">
+                @csrf
+                <input type="hidden" name="id" value="{{ $detailedProduct->id }}">
 
-                                                                                                @if ($detailedProduct->digital == 0)
-                                                                                                                                                                                                <!-- Choice Options -->
-                                                                                                                                                                                                                @if ($detailedProduct->choice_options != null)
-                                                                                                                                                                                                                    @foreach (json_decode($detailedProduct->choice_options) as $key => $choice)
-                                                                                                                                                                                                                        <div class="row no-gutters mb-3">
-                                                                                                                                                                                                                            <div class="col-sm-2">
-                                                                                                                                                                                                                                <div class="text-secondary fs-14 fw-400 mt-2 ">
-                                                                                                                                                                                                                                                    {{ get_single_attribute_name($choice->attribute_id) }}
-                                                                                                                                                                                                                                </div>
-                                                                                                                                                                                                                            </div>
-                                                                                                                                                                                                                            <div class="col-sm-10">
-                                                                                                                                                                                                                                <div class="aiz-radio-inline">
-                                                                                                                                                                                                                                                    @foreach ($choice->values as $key => $value)
-                                                                                                                                                                                                                                                        <label class="aiz-megabox pl-0 mr-2 mb-0">
-                                                                                                                                                                                                                                                            <input type="radio" name="attribute_id_{{ $choice->attribute_id }}"
-                                                                                                                                                                                                                                                            value="{{ $value }}" @if ($key == 0) checked @endif>
-                                                                                                                                                                                                                                                            <span
-                                                                                                                                                                                                                                                                class="aiz-megabox-elem rounded-0 d-flex align-items-center justify-content-center py-1 px-3">
-                                                                                                                                                                                                                                                                             {{ $value }}
-                                                                                                                                                                                                                                                            </span>
-                                                                                                                                                                                                                                                        </label>
-                                                                                                                                                                                                                                                    @endforeach
-                                                                                                                                                                                                                                </div>
-                                                                                                                                                                                                                            </div>
-                                                                                                                                                                                                                        </div>
-                                                                                                                                                                                                                    @endforeach
-                                                                                                                                                                                                                @endif
-
-                                                                                                                                                                                                <!-- Color Options -->
-                                                                                                                                                                                                                @if ($detailedProduct->colors != null && count(json_decode($detailedProduct->colors)) > 0)
-                                                                                                                                                                                                                    <div class="row no-gutters mb-3">
-                                                                                                                                                                                                                        <div class="col-sm-2">
-                                                                                                                                                                                                                            <div class="text-secondary fs-14 fw-400 mt-2">{{ translate('Color') }}</div>
-                                                                                                                                                                                                                                </div>
-                                                                                                                                                                                                                                <div class=" col-sm-10">
-                                                                                                                                                                                                                                <div class="aiz-radio-inline">
-                                                                                                                                                                                                                                                    @foreach (json_decode($detailedProduct->colors) as $key => $color)
-                                                                                                                                                                                                                                                        <label class="aiz-megabox pl-0 mr-2 mb-0" data-toggle="tooltip"
-                                                                                                                                                                                                                                                            data-title="{{ get_single_color_name($color) }}">
-                                                                                                                                                                                                                                                            <input type="radio" name="color" value="{{ get_single_color_name($color) }}" @if ($key == 0) checked
-                                                                                                                                                                                                                                                            @endif>
-                                                                                                                                                                                                                                                            <span
-                                                                                                                                                                                                                                                                class="aiz-megabox-elem rounded-0 d-flex align-items-center justify-content-center p-1">
-                                                                                                                                                                                                                                                                <span class="size-25px d-inline-block rounded"
-                                                                                                                                                                                                                                                                    style="background: {{ $color }};"></span>
-                                                                                                                                                                                                                                                            </span>
-                                                                                                                                                                                                                                                        </label>
-                                                                                                                                                                                                                                                    @endforeach
-                                                                                                                                                                                                                                </div>
-                                                                                                                                                                                                                            </div>
-                                                                                                                                                                                                                        </div>
-                                                                                                                                                                                                                @endif
-
-                                                                                                                                                                                                    <!-- Quantity + Add to cart -->
-                                                                                                                                                                                                    <div class="row no-gutters mb-3">
-                                                                                                                                                                                                        <div class="col-sm-2">
-                                                                                                                                                                                                            <div class="text-secondary fs-14 fw-400 mt-2">{{ translate('Quantity') }}</div>
-                                                                                                                                                                                                        </div>
-                                                                                                                                                                                                        <div class=" col-sm-10">
-                                                                                                                                                                                                                <div class="product-quantity d-flex align-items-center">
-                                                                                                                                                                                                                    <div class="row no-gutters align-items-center aiz-plus-minus mr-3"
-                                                                                                                                                                                                                        style="width: 130px;">
-                                                                                                                                                                                                                        <button
-                                                                                                                                                                                                                            class="btn col-auto btn-icon btn-sm btn-light rounded-0"
-                                                                                                                                                                                                                            type="button" data-type="minus" data-field="quantity"
-                                                                                                                                                                                                                            disabled="">
-                                                                                                                                                                                                                            <i class="las la-minus"></i>
-                                                                                                                                                                                                                        </button>
-                                                                                                                                                                                                                        <input type="number" name="quantity"
-                                                                                                                                                                                                                            class="col border-0 text-center flex-grow-1 fs-16 input-number"
-                                                                                                                                                                                                                            placeholder="1" value="{{ $detailedProduct->min_qty }}"
-                                                                                                                                                                                                                        min="{{ $detailedProduct->min_qty }}" max="10"
-                                                                                                                                                                                                                        lang="en">
-                                                                                                                                                                                                                        <button
-                                                                                                                                                                                                                            class="btn col-auto btn-icon btn-sm btn-light rounded-0"
-                                                                                                                                                                                                                            type="button" data-type="plus" data-field="quantity">
-                                                                                                                                                                                                                            <i class="las la-plus"></i>
-                                                                                                                                                                                                                        </button>
-                                                                                                                                                                                                                    </div>
-                                                                                                                                                                                                                                    @php
-                                                                                                                                                                                                                                        $qty = 0;
-                                                                                                                                                                                                                                        foreach ($detailedProduct->stocks as $key => $stock) {
-                                                                                                                                                                                                                                            $qty += $stock->qty;
-                                                                                                                                                                                                                                        }
-                                                                                                                                                                                                                                    @endphp
-                                                                                                                                                                                                                    <div class="avialable-amount opacity-60">
-                                                                                                                                                                                                                                        @if ($detailedProduct->stock_visibility_state == 'quantity')
-                                                                                                                                                                                                                                            (<span id="available-quantity">{{ $qty }}</span>
-                                                                                                                                                                                                                                                            {{ translate('available') }})
-                                                                                                                                                                                                                                        @elseif($detailedProduct->stock_visibility_state == 'text' && $qty >= 1)
-                                                                                                                                                                                                                                            (<span id="available-quantity">{{ translate('In Stock') }}</span>)
-                                                                                                                                                                                                                                        @endif
-                                                                                                                                                                                                                </div>
-                                                                                                                                                                                                            </div>
-                                                                                                                                                                                                        </div>
-                                                                                                                                                                                                    </div>
-                                                                                                @else
-                                                                                                    <!-- Quantity -->
-                                                                                                    <input type=" hidden" name="quantity" value="1">
-                                                                                                @endif
-
-                                                                                                                        <!-- Total Price -->
-                                                                                                                        <div class="row no-gutters pb-3 d-none"
-                                                                                                                            id="chosen_price_div">
-                                                                                                                            <div class="col-sm-2">
-                                                                                                                                <div class="text-secondary fs-14 fw-400 mt-1">{{ translate('Total Price') }}</div>
-                                                                                </div>
-                                                                                <div class=" col-sm-10">
-                                                                                                                                    <div class="product-price">
-                                                                                                                                        <strong id="chosen_price"
-                                                                                                                                            class="fs-20 fw-700 text-primary">
-
-                                                                                                                                        </strong>
-                                                                                                                                    </div>
-                                                                                                                                </div>
-                                                                                                                            </div>
-
-                                                                                        </form>
-                                @endif
-
-                                @if ($detailedProduct->auction_product)
-                                                                                                        @php
-                                                                                                            $highest_bid = $detailedProduct->bids->max('amount');
-                                                                                                            $min_bid_amount = $highest_bid != null ? $highest_bid + 1 : $detailedProduct->starting_bid;
-                                                                                                        @endphp
-                                                                                                        @if ($detailedProduct->auction_end_date >= strtotime('now'))
-                                                                                                                                                                                                <div class="mt-4">
-                                                                                                                                                                                                                    @if (Auth::check() && $detailedProduct->user_id == Auth::user()->id)
-                                                                                                                                                                                                                        <span class="badge badge-inline badge-danger">{{ translate('Seller cannot Place Bid to His Own Product') }}</span>
-                                                                                                                                                                                                                    @else
-                                                                                                                                                                                                                                                                                                                                                                                    <button type=" button"
-                                                                                                                                                                                                                                                                                                                                                                class="btn btn-primary buy-now  fw-600 min-w-150px rounded-0"
-                                                                                                                                                                                                                                                                                                                                                                onclick="bid_modal()">
-                                                                                                                                                                                                                                                                                                                                                                <i class="las la-gavel"></i>
-                                                                                                                                                                                                                                                                                                                                                                                                @if (
-                                                                                                                                                                                                                                                                                                                                                                                                        Auth::check() &&
-                                                                                                                                                                                                                                                                                                                                                                                                        Auth::user()->product_bids->where('product_id', $detailedProduct->id)->first() != null
-                                                                                                                                                                                                                                                                                                                                                                                                    )
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          {{ translate('Change Bid') }}
-                                                                                                                                                                                                                                                                                                                                                                                                @else
-                                                                                                                                                                                                                                                                                                                                                                                                     {{ translate('Place Bid') }}
-                                                                                                                                                                                                                                                                                                                                                                                                @endif
-                                                                                                                                                                                                                                                                                                                                                                </button>
-                                                                                                                                                                                                                    @endif
-                                                                                                                                                                                                </div>
-                                                                                                        @endif
-                                @else
-                                                                                                <!-- Add to cart & Buy now Buttons -->
-                                                                                                <div class="mt-3">
-                                                                                                            @if ($detailedProduct->digital == 0)
-                                                                                                                            @if ($detailedProduct->external_link != null)
-                                                                                                                                <a type="button" class="btn btn-primary buy-now fw-600 add-to-cart px-4 rounded-0"
-                                                                                                                                    href="{{ $detailedProduct->external_link }}">
-                                                                                                                                    <i class="la la-share"></i> {{ translate($detailedProduct->external_link_btn) }}
-                                                                                                                                </a>
-                                                                                                                            @else
-                                                                                                                                <button type=" button"
-                                                                                                                                        class="btn btn-secondary-base mr-2 add-to-cart fw-600 min-w-150px rounded-0 text-white" @if (Auth::check()) onclick="
-                                                                                                                                        addToCart()" @else onclick="showLoginModal()" @endif>
-                                                                                                                                        <i class="las la-shopping-bag"></i> {{ translate('Add to cart') }}
-                                                                                                                                </button>
-                                                                                                                                <button type=" button"
-                                                                                                                                            class="btn btn-primary buy-now fw-600 add-to-cart min-w-150px rounded-0" @if (Auth::check()) onclick="
-                                                                                                                                            buyNow()" @else onclick="showLoginModal()" @endif>
-                                                                                                                                            <i class="la la-shopping-cart"></i> {{ translate('Buy Now') }}
-                                                                                                                                </button>
-                                                                                                                            @endif
-                                                                                                                <button type=" button" class="btn btn-secondary out-of-stock fw-600 d-none" disabled>
-                                                                                                                                    <i class="la la-cart-arrow-down"></i> {{ translate('Out of Stock') }}
-                                                                                                                </button>
-                                                                                                            @elseif ($detailedProduct->digital == 1)
-                                                                                                                <button type=" button" class="btn btn-secondary-base mr-2 add-to-cart fw-600 min-w-150px rounded-0 text-white" @if (Auth::check()) onclick="
-                                                                                                                addToCart()" @else onclick="showLoginModal()" @endif>
-                                                                                                                                        <i class="las la-shopping-bag"></i> {{ translate('Add to cart') }}
-                                                                                                                </button>
-                                                                                                                <button type=" button" class="btn btn-primary buy-now fw-600 add-to-cart min-w-150px rounded-0" @if (Auth::check()) onclick="
-                                                                                                                buyNow()" @else onclick="showLoginModal()" @endif>
-                                                                                                                                            <i class="la la-shopping-cart"></i> {{ translate('Buy Now') }}
-                                                                                                                </button>
-                                                                                                            @endif
-                                                                                        </div>
-
-                                                                                        <!-- Promote Link -->
-                                                                                        <div class=" d-table width-100 mt-3">
-                                                                                                                                <div class="d-table-cell">
-                                                                                                                                            @if (
-                                                                                                                                                    Auth::check() &&
-                                                                                                                                                    addon_is_activated('affiliate_system') &&
-                                                                                                                                                    get_affliate_option_status() &&
-                                                                                                                                                    Auth::user()->affiliate_user != null &&
-                                                                                                                                                    Auth::user()->affiliate_user->status
-                                                                                                                                                )
-                                                                                                                                                                                                                                                                                                                                                            @php
-                                                                                                                                                                                                                                                                                                                                                                if (Auth::check()) {
-                                                                                                                                                                                                                                                                                                                                                                    if (Auth::user()->referral_code == null) {
-                                                                                                                                                                                                                                                                                                                                                                        Auth::user()->referral_code = substr(Auth::user()->id . Str::random(10), 0, 10);
-                                                                                                                                                                                                                                                                                                                                                                        Auth::user()->save();
-                                                                                                                                                                                                                                                                                                                                                                    }
-                                                                                                                                                                                                                                                                                                                                                                    $referral_code = Auth::user()->referral_code;
-                                                                                                                                                                                                                                                                                                                                                                    $referral_code_url = URL::to('/product') . '/' . $detailedProduct->slug . "?product_referral_code=$referral_code";
-                                                                                                                                                                                                                                                                                                                                                                }
-                                                                                                                                                                                                                                                                                                                                                            @endphp
-                                                                                                                                                                                                                                                                                                                            <div>
-                                                                                                                                                                                                                                                                                                                                <button type="button" id="ref-cpurl-btn"
-                                                                                                                                                                                                                                                                                                                                    class="btn btn-secondary w-200px rounded-0"
-                                                                                                                                                                                                                                                                                                                                    data-attrcpy="{{ translate('Copied') }}"
-                                                                                                                                                                                                                                                                                                                                    onclick="CopyToClipboard(this)" data-url="{{ $referral_code_url }}">{{ translate('Copy the Promote Link') }}</button>
-                                                                                                                                                                                                                                                                                                                            </div>
-                                                                                                                                            @endif
-                                                                                                                                </div>
-                                                                                                </div>
-
-                                                                                                <!-- Refund -->
-                                                                                                        @php
-                                                                                                            $refund_sticker = get_setting('refund_sticker');
-                                                                                                        @endphp
-                                                                                                        @if (addon_is_activated('refund_request'))
-                                                                                                            <div class="row no-gutters mt-3">
-                                                                                                                <div class="col-sm-2">
-                                                                                                                    <div class="text-secondary fs-14 fw-400 mt-2">{{ translate('Refund') }}</div>
-                                                                                                            </div>
-                                                                                                            <div class=" col-sm-10">
-                                                                                                                                @if ($detailedProduct->refundable == 1)
-                                                                                                                                    <a href="{{ route('returnpolicy') }}" target="_blank">
-                                                                                                                                                @if ($refund_sticker != null)
-                                                                                                                                                    <img src="{{ uploaded_asset($refund_sticker) }}" height="36">
-                                                                                                                                                @else
-                                                                                                                                                    <img src="{{ static_asset('assets/img/refund-sticker.jpg') }}"
-                                                                                                                                                        height="36">
-                                                                                                                                                @endif
-                                                                                                                                    </a>
-                                                                                                                                    <a href="{{ route('returnpolicy') }}"
-                                                                                                                                        class="text-blue hov-text-primary fs-14 ml-3" target="_blank">{{ translate('View Policy') }}</a>
-                                                                                                                                @else
-                                                                                                                                    <div class=" text-dark fs-14 fw-400 mt-2">{{ translate('Not Applicable') }}
-                                                                                                                                    </div>
-                                                                                                                                @endif
-                                                                                                                </div>
-                                                                                                            </div>
-                                                                                                        @endif
-
-                                                                                                <!-- Seller Guarantees -->
-                                                                                                        @if ($detailedProduct->digital == 1)
-                                                                                                            @if ($detailedProduct->added_by == 'seller')
-                                                                                                                <div class="row no-gutters mt-3">
-                                                                                                                    <div class="col-2">
-                                                                                                                        <div class="text-secondary fs-14 fw-400">{{ translate('Seller Guarantees') }}</div>
-                                                                                                                    </div>
-                                                                                                                    <div class=" col-10">
-                                                                                                                                    @if ($detailedProduct->user->shop->verification_status == 1)
-                                                                                                                                        <span class="text-success fs-14 fw-700">{{ translate('Verified seller') }}</span>
-                                                                                                                                    @else
-                                                                                                                                        <span class=" text-danger fs-14 fw-700">{{ translate('Non verified seller') }}</span>
-                                                                                                                                    @endif
-                                                                                                                        </div>
-                                                                                                                    </div>
-                                                                                                            @endif
-                                                                                                        @endif
-                                @endif
-
-                                    <!-- Share -->
-                                    <div class="row no-gutters mt-4">
-                                        <div class="col-sm-2">
-                                            <div class="text-secondary fs-14 fw-400 mt-2">{{ translate('Share') }}</div>
+                @if ($detailedProduct->digital == 0)
+                        <!-- Choice Options -->
+                        @if ($detailedProduct->choice_options != null)
+                            @foreach (json_decode($detailedProduct->choice_options) as $key => $choice)
+                                <div class="row no-gutters mb-3">
+                                    <div class="col-sm-2">
+                                        <div class="text-secondary fs-14 fw-400 mt-2 ">
+                                            {{ get_single_attribute_name($choice->attribute_id) }}
                                         </div>
-                                        <div class="col-sm-10">
-                                            <div class="aiz-share"></div>
+                                    </div>
+                                    <div class="col-sm-10">
+                                        <div class="aiz-radio-inline">
+                                            @foreach ($choice->values as $key => $value)
+                                                <label class="aiz-megabox pl-0 mr-2 mb-0">
+                                                    <input type="radio" name="attribute_id_{{ $choice->attribute_id }}" value="{{ $value }}" @if ($key == 0) checked @endif>
+                                                    <span
+                                                        class="aiz-megabox-elem rounded-0 d-flex align-items-center justify-content-center py-1 px-3">
+                                                        {{ $value }}
+                                                    </span>
+                                                </label>
+                                            @endforeach
                                         </div>
-                                        <div id="copyButton"
-                                            style="position: absolute;top: 513px;right: 62%;z-index: 9999;background: purple;color: white;padding: 6px;font-size: 14px;padding-left: 10px;padding-right: 11px;cursor: pointer;">
-                                            <i class="las la-copy"></i>
-                                        </div>
-
-                                        <style>
-                                            /* Mobile screen adjustment (less than 768px wide) */
-                                            @media (max-width: 768px) {
-                                                #copyButton {
-                                                    z-index: auto;
-                                                    /* Remove the z-index on mobile */
-                                                    top: -40px;
-                                                    /* Slightly move up */
-                                                    left: 53%;
-                                                    /* Adjust left position */
-                                                }
-                                            }
-
-                                            /* Additional adjustment for smaller screens (between 480px and 768px) */
-                                            @media (max-width: 768px) and (min-width: 480px) {
-                                                #copyButton {
-                                                    position: relative;
-                                                    top: 10px;
-                                                    /* Adjust as needed */
-                                                    left: 5%;
-                                                    /* Center the button horizontally */
-                                                }
-                                            }
-
-                                            /* Very small screen adjustments (less than 480px wide) */
-                                            @media (max-width: 480px) {
-                                                #copyButton {
-                                                    z-index: auto;
-                                                    /* Remove the z-index on very small screens */
-                                                    top: 10px;
-                                                    /* Adjust top to avoid overlapping */
-                                                    left: 41%;
-                                                    margin-top: 29%;
-                                                    width: 8%;
-                                                    /* Keep the button to the left */
-                                                }
-                                            }
-                                        </style>
-
-
-                                        <script>
-                                            // Function to copy text to clipboard
-                                            function copyToClipboard(text) {
-                                                const textarea = document.createElement("textarea");
-                                                textarea.value = text;
-                                                document.body.appendChild(textarea);
-                                                textarea.select();
-                                                document.execCommand("copy");
-                                                document.body.removeChild(textarea);
-                                            }
-
-                                            // Add click event to the copy button
-                                            document.getElementById("copyButton").addEventListener("click", function () {
-                                                copyToClipboard(window.location.href); // Copy the current URL to clipboard
-                                                alert("URL copied to clipboard!"); // Notify user
-                                            });
-                                        </script>
-
                                     </div>
                                 </div>
+                            @endforeach
+                        @endif
 
-                                <div
-                                    style="font-family: Arial, sans-serif;line-height: 2.6;padding: 20px;background-color: #fff;max-width: 400px;border: 1px solid #ddd;position: absolute;top: 3px;left: 51%;z-index: 999;">
-                                    <h3 style="margin-top: 0; color: #000;" class="fs-20 fw-700 text-dark text-center">
-                                        Payment</h3>
-                                    <p style="margin: 0; color: var(--primary); font-weight: bold;" class="text-center">
-                                        Cash On
-                                        Delivery&nbsp;&nbsp;&nbsp;&nbsp;Online Payment</p>
+                        <!-- Color Options -->
+                        @if ($detailedProduct->colors != null && count(json_decode($detailedProduct->colors)) > 0)
+                            <div class="row no-gutters mb-3">
+                                <div class="col-sm-2">
+                                    <div class="text-secondary fs-14 fw-400 mt-2">{{ translate('Color') }}</div>
+                                </div>
+                                <div class=" col-sm-10">
+                                    <div class="aiz-radio-inline">
+                                        @foreach (json_decode($detailedProduct->colors) as $key => $color)
+                                            <label class="aiz-megabox pl-0 mr-2 mb-0" data-toggle="tooltip"
+                                                data-title="{{ get_single_color_name($color) }}">
+                                                <input type="radio" name="color" value="{{ get_single_color_name($color) }}" @if ($key == 0)
+                                                checked @endif>
+                                                <span
+                                                    class="aiz-megabox-elem rounded-0 d-flex align-items-center justify-content-center p-1">
+                                                    <span class="size-25px d-inline-block rounded" style="background: {{ $color }};"></span>
+                                                </span>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
 
-                                    <h3 style="margin-top: 20px; color: #000;"
-                                        class="fs-20 fw-700 text-dark text-center">Delivery Charge</h3>
-                                    <p style="margin: 5px 0;color: #626271;font-family: 'Public Sans';">01. 80 BDT (
-                                        Dhaka City )</p>
-                                    <p style="margin: 5px 0;color: #626271;font-family: 'Public Sans';">02. Conditional
-                                        ( Out of Dhaka City )</p>
+                        <!-- Quantity + Add to cart -->
+                        <div class="row no-gutters mb-3">
+                            <div class="col-sm-2">
+                                <div class="text-secondary fs-14 fw-400 mt-2">{{ translate('Quantity') }}</div>
+                            </div>
+                            <div class=" col-sm-10">
+                                <div class="product-quantity d-flex align-items-center">
+                                    <div class="row no-gutters align-items-center aiz-plus-minus mr-3" style="width: 130px;">
+                                        <button class="btn col-auto btn-icon btn-sm btn-light rounded-0" type="button"
+                                            data-type="minus" data-field="quantity" disabled="">
+                                            <i class="las la-minus"></i>
+                                        </button>
+                                        <input type="number" name="quantity"
+                                            class="col border-0 text-center flex-grow-1 fs-16 input-number" placeholder="1"
+                                            value="{{ $detailedProduct->min_qty }}" min="{{ $detailedProduct->min_qty }}" max="10"
+                                            lang="en">
+                                        <button class="btn col-auto btn-icon btn-sm btn-light rounded-0" type="button"
+                                            data-type="plus" data-field="quantity">
+                                            <i class="las la-plus"></i>
+                                        </button>
+                                    </div>
+                                    @php
+                                        $qty = 0;
+                                        foreach ($detailedProduct->stocks as $key => $stock) {
+                                            $qty += $stock->qty;
+                                        }
+                                    @endphp
+                                    <div class="avialable-amount opacity-60">
+                                        @if ($detailedProduct->stock_visibility_state == 'quantity')
+                                            (<span id="available-quantity">{{ $qty }}</span>
+                                            {{ translate('available') }})
+                                        @elseif($detailedProduct->stock_visibility_state == 'text' && $qty >= 1)
+                                            (<span id="available-quantity">{{ translate('In Stock') }}</span>)
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                @else
+                    <!-- Quantity -->
+                    <input type=" hidden" name="quantity" value="1">
+                @endif
 
-                                    <p style="margin: 5px 0;color: #626271;font-family: 'Public Sans';">
-                                        Additionally you can place an order by calling the following below number.
-                                    </p>
+                <!-- Total Price -->
+                <div class="row no-gutters pb-3 d-none" id="chosen_price_div">
+                    <div class="col-sm-2">
+                        <div class="text-secondary fs-14 fw-400 mt-1">{{ translate('Total Price') }}</div>
+                    </div>
+                    <div class=" col-sm-10">
+                        <div class="product-price">
+                            <strong id="chosen_price" class="fs-20 fw-700 text-primary">
 
-                                    <button
-                                        style="display: block; width: 100%; background-color: var(--primary); color: #fff; padding: 0 0; border: none; border-radius: 5px; font-size: 16px; cursor: pointer;">
-                                        <i class="las la-phone mr-1"></i> 01897608888
+                            </strong>
+                        </div>
+                    </div>
+                </div>
+
+            </form>
+        @endif
+
+        @if ($detailedProduct->auction_product)
+                @php
+                    $highest_bid = $detailedProduct->bids->max('amount');
+                    $min_bid_amount = $highest_bid != null ? $highest_bid + 1 : $detailedProduct->starting_bid;
+                @endphp
+                @if ($detailedProduct->auction_end_date >= strtotime('now'))
+                    <div class="mt-4">
+                        @if (Auth::check() && $detailedProduct->user_id == Auth::user()->id)
+                            <span
+                                class="badge badge-inline badge-danger">{{ translate('Seller cannot Place Bid to His Own Product') }}</span>
+                        @else
+                            <button type=" button" class="btn btn-primary buy-now  fw-600 min-w-150px rounded-0" onclick="bid_modal()">
+                                <i class="las la-gavel"></i>
+                                @if (
+                                        Auth::check() &&
+                                        Auth::user()->product_bids->where('product_id', $detailedProduct->id)->first() != null
+                                    )
+                                        {{ translate('Change Bid') }}
+                                @else
+                                    {{ translate('Place Bid') }}
+                                @endif
+                            </button>
+                        @endif
+                    </div>
+                @endif
+        @else
+                <!-- Add to cart & Buy now Buttons -->
+                <div class="mt-3">
+                    @if ($detailedProduct->digital == 0)
+                        @if ($detailedProduct->external_link != null)
+                            <a type="button" class="btn btn-primary buy-now fw-600 add-to-cart px-4 rounded-0"
+                                href="{{ $detailedProduct->external_link }}">
+                                <i class="la la-share"></i> {{ translate($detailedProduct->external_link_btn) }}
+                            </a>
+                        @else
+                            <!-- Buttons for Desktop -->
+                            <div class="d-none d-md-block">
+                                <button type="button"
+                                    class="btn btn-secondary-base mr-2 add-to-cart fw-600 min-w-150px rounded-0 text-white" @if (Auth::check()) onclick="addToCart()" @else onclick="showLoginModal()" @endif>
+                                    <i class="las la-shopping-bag"></i> {{ translate('Add to cart') }}
+                                </button>
+                                <button type="button" class="btn btn-primary buy-now fw-600 add-to-cart min-w-150px rounded-0" @if (Auth::check()) onclick="buyNow()" @else onclick="showLoginModal()" @endif>
+                                    <i class="la la-shopping-cart"></i> {{ translate('Buy Now') }}
+                                </button>
+                            </div>
+
+                            <!-- Buttons for Mobile (Fixed at Bottom) -->
+                            <div class="d-block d-md-none fixed-bottom bg-white p-2 shadow-lg">
+                                <div class="d-flex justify-content-between">
+                                    <button type="button" class="btn btn-secondary-base fw-600 flex-grow-1 mx-1 rounded-0 text-white"
+                                        @if (Auth::check()) onclick="addToCart()" @else onclick="showLoginModal()" @endif>
+                                        <i class="las la-shopping-bag"></i> {{ translate('Add to cart') }}
+                                    </button>
+                                    <button type="button" class="btn btn-primary fw-600 flex-grow-1 mx-1 rounded-0" @if (Auth::check())
+                                    onclick="buyNow()" @else onclick="showLoginModal()" @endif>
+                                        <i class="la la-shopping-cart"></i> {{ translate('Buy Now') }}
                                     </button>
                                 </div>
+                            </div>
+                        @endif
+                        <button type=" button" class="btn btn-secondary out-of-stock fw-600 d-none" disabled>
+                            <i class="la la-cart-arrow-down"></i> {{ translate('Out of Stock') }}
+                        </button>
+                    @elseif ($detailedProduct->digital == 1)
+                        <button type=" button"
+                            class="btn btn-secondary-base mr-2 add-to-cart fw-600 min-w-150px rounded-0 text-white" @if (Auth::check()) onclick="
+                            addToCart()" @else onclick="showLoginModal()" @endif>
+                            <i class="las la-shopping-bag"></i> {{ translate('Add to cart') }}
+                        </button>
+                        <button type=" button" class="btn btn-primary buy-now fw-600 add-to-cart min-w-150px rounded-0" @if (Auth::check()) onclick="
+                        buyNow()" @else onclick="showLoginModal()" @endif>
+                            <i class="la la-shopping-cart"></i> {{ translate('Buy Now') }}
+                        </button>
+                    @endif
+                </div>
+
+                <!-- Promote Link -->
+                <div class=" d-table width-100 mt-3">
+                    <div class="d-table-cell">
+                        @if (
+                                Auth::check() &&
+                                addon_is_activated('affiliate_system') &&
+                                get_affliate_option_status() &&
+                                Auth::user()->affiliate_user != null &&
+                                Auth::user()->affiliate_user->status
+                            )
+                                        @php
+                                            if (Auth::check()) {
+                                                if (Auth::user()->referral_code == null) {
+                                                    Auth::user()->referral_code = substr(Auth::user()->id . Str::random(10), 0, 10);
+                                                    Auth::user()->save();
+                                                }
+                                                $referral_code = Auth::user()->referral_code;
+                                                $referral_code_url = URL::to('/product') . '/' . $detailedProduct->slug . "?product_referral_code=$referral_code";
+                                            }
+                                        @endphp
+                                        <div>
+                                            <button type="button" id="ref-cpurl-btn" class="btn btn-secondary w-200px rounded-0"
+                                                data-attrcpy="{{ translate('Copied') }}" onclick="CopyToClipboard(this)"
+                                                data-url="{{ $referral_code_url }}">{{ translate('Copy the Promote Link') }}</button>
+                                        </div>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Refund -->
+                @php
+                    $refund_sticker = get_setting('refund_sticker');
+                @endphp
+                @if (addon_is_activated('refund_request'))
+                    <div class="row no-gutters mt-3">
+                        <div class="col-sm-2">
+                            <div class="text-secondary fs-14 fw-400 mt-2">{{ translate('Refund') }}</div>
+                        </div>
+                        <div class=" col-sm-10">
+                            @if ($detailedProduct->refundable == 1)
+                                <a href="{{ route('returnpolicy') }}" target="_blank">
+                                    @if ($refund_sticker != null)
+                                        <img src="{{ uploaded_asset($refund_sticker) }}" height="36">
+                                    @else
+                                        <img src="{{ static_asset('assets/img/refund-sticker.jpg') }}" height="36">
+                                    @endif
+                                </a>
+                                <a href="{{ route('returnpolicy') }}" class="text-blue hov-text-primary fs-14 ml-3"
+                                    target="_blank">{{ translate('View Policy') }}</a>
+                            @else
+                                <div class=" text-dark fs-14 fw-400 mt-2">{{ translate('Not Applicable') }}
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                @endif
+
+                <!-- Seller Guarantees -->
+                @if ($detailedProduct->digital == 1)
+                    @if ($detailedProduct->added_by == 'seller')
+                        <div class="row no-gutters mt-3">
+                            <div class="col-2">
+                                <div class="text-secondary fs-14 fw-400">{{ translate('Seller Guarantees') }}</div>
+                            </div>
+                            <div class=" col-10">
+                                @if ($detailedProduct->user->shop->verification_status == 1)
+                                    <span class="text-success fs-14 fw-700">{{ translate('Verified seller') }}</span>
+                                @else
+                                    <span class=" text-danger fs-14 fw-700">{{ translate('Non verified seller') }}</span>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
+                @endif
+        @endif
+
+        <!-- Share -->
+        <div class="row no-gutters mt-4">
+            <div class="col-sm-2">
+                <div class="text-secondary fs-14 fw-400 mt-2">{{ translate('Share') }}</div>
+            </div>
+            <div class="col-sm-10">
+                <div class="aiz-share"></div>
+
+            </div>
+            <div id="copyBtn" style="cursor: pointer; display: inline-block;">
+                <svg fill="#fff" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg"
+                    xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="18" viewBox="0 0 93.842 93.843"
+                    xml:space="preserve" stroke="#fff">
+                    <g>
+                        <path
+                            d="M74.042,11.379h-9.582v-0.693c0-1.768-1.438-3.205-3.206-3.205h-6.435V3.205C54.819,1.437,53.381,0,51.614,0H42.23 c-1.768,0-3.206,1.438-3.206,3.205V7.48H32.59c-1.768,0-3.206,1.438-3.206,3.205v0.693h-9.582c-2.393,0-4.339,1.945-4.339,4.34 v73.785c0,2.394,1.946,4.34,4.339,4.34h54.238c2.394,0,4.339-1.946,4.339-4.34V15.719C78.38,13.324,76.434,11.379,74.042,11.379z M32.617,25.336h28.61c1.709,0,3.102-1.391,3.102-3.1v-3.438h7.554l0.021,68.164l-49.939,0.021V18.801h7.554v3.436 C29.517,23.945,30.907,25.336,32.617,25.336z">
+                        </path>
+                    </g>
+                </svg>
+            </div>
+
+            <div id="toast" style="display: none;">
+                Link copied to clipboard! ðŸ“„
+            </div>
+
+            <style>
+                #toast {
+                    position: fixed;
+                    bottom: 20px;
+                    left: 20px;
+                    background-color: #13814c;
+                    color: white;
+                    padding: 20px 30px;
+                    border-radius: 8px;
+                    font-size: 16px;
+                    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+                    z-index: 1000;
+                    display: none;
+                    animation: fadeInOut 4s ease-in-out forwards;
+                }
+
+                @keyframes fadeInOut {
+                    0% {
+                        opacity: 0;
+                        transform: translateY(20px);
+                    }
+
+                    10% {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+
+                    90% {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+
+                    100% {
+                        opacity: 0;
+                        transform: translateY(20px);
+                    }
+                }
+
+                @media (min-width: 1024px) and (max-width: 1940px) {
+                    #copyBtn {
+                        background-color: #441752;
+                        padding: 5px;
+                        margin-left: 7%;
+                        position: absolute;
+                        margin-top: 8px;
+                    }
+                }
+
+                @media (min-width: 320px) and (max-width: 768px) {
+                    #copyBtn {
+                        background-color: #441752;
+                        padding: 7px;
+                        margin-left: 57%;
+                        position: absolute;
+                        margin-top: 35px;
+                    }
+                }
+            </style>
+
+            <script>
+                document.getElementById('copyBtn').addEventListener('click', function () {
+                    // Copy the current location to clipboard
+                    const currentUrl = window.location.href;
+                    navigator.clipboard.writeText(currentUrl).then(() => {
+                        // Show the toast notification
+                        const toast = document.getElementById('toast');
+                        toast.style.display = 'block';
+
+                        // Hide the toast after 4 seconds
+                        setTimeout(() => {
+                            toast.style.display = 'none';
+                        }, 2000);
+                    }).catch(err => {
+                        console.error('Failed to copy text: ', err);
+                    });
+                });
+            </script>
+
+
+        </div>
+    </div>
+
+    <div class="text-rig" style="font-family: Arial, sans-serif; line-height: 2.6; padding: 20px; background-color: #d7d7d74a; max-width: 400px;top: 3px; left: 51%; z-index: 999;box-shadow: rgba(0, 0, 0, 0.12) -2px 2px 3px, rgba(0, 0, 0, 0.24) -1px 1px 2px;
+">
+        <h3 style="margin-top: 0; color: #000;" class="fs-20 fw-700 text-dark text-center">
+            Payment
+        </h3>
+        <p style="margin: 0; color: var(--primary); font-weight: bold;" class="text-center">
+            Cash On Delivery&nbsp;&nbsp;&nbsp;&nbsp;Online Payment
+        </p>
+        <hr style="background-color: #00000026;height: 1px;">
+        <h3 style="margin-top: 20px; color: #000;" class="fs-20 fw-700 text-dark text-center">
+            Delivery Charge
+        </h3>
+        <p style="margin: 5px 0; color: #626271; font-family: 'Public Sans';">
+            01. 80 BDT (Dhaka City)
+        </p>
+        <p style="margin: 5px 0; color: #626271; font-family: 'Public Sans';">
+            02. Conditional (Out of Dhaka City)
+        </p>
+
+        <p style="margin: 5px 0; color: #626271; font-family: 'Public Sans';">
+            Additionally, you can place an order by calling the following number.
+        </p>
+
+        <button
+            style="display: block; width: 100%; background-color: var(--primary); color: #fff; padding: 0 0; border: none; border-radius: 5px; font-size: 16px; cursor: pointer;">
+            <i class="las la-phone mr-1"></i> 01897608888
+        </button>
+        <div>
+            <div style="display: flex;">
+                <h4 style="color: #626271; font-size: 13px; margin-top: 10px; font-family: 'Public Sans';">
+                    {{ translate('Return & Warranty') }}
+                </h4>
+                <i class="fa-solid fa-circle-info" style="color: #b4b4c2; padding: 11px;"></i>
+            </div>
+
+            <!-- Display Warranty -->
+            <div style="color: #626271;">
+                <i class="fa-solid fa-shield"></i>
+                @if($warranty)
+                    {{ $warranty }} days of warranty.
+                @else
+                    {{ translate('No warranty available') }}
+                @endif
+            </div>
+
+            <!-- Display Days of Return -->
+            <div style="color: #626271;">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                @if($return_days)
+                    {{ $return_days }} {{ translate('Days Returns') }}
+                @else
+                    {{ translate('No return available') }}
+                @endif
+            </div>
+        </div>
+        <hr style="background-color: #00000026;height: 1px;">
+        <!-- Mini-size Image with a Link -->
+        <div style="margin-top: 20px; text-align: center; {{ empty($bright_link) ? 'display:none;' : '' }}">
+            <p
+                style="margin-bottom: 10px;color: #3b3b4e;font-family: 'Public Sans';font-size: 14px;text-decoration: underline;">
+                For more Details Visit
+            </p>
+            <a href="{{ $bright_link }}" target="_blank">
+                <img src="https://brightcommunicationbd.com/assets/images/16957089051694328531transparent.png"
+                    alt="Mini Image" style="width: 100%; height: 100%;">
+            </a>
+        </div>
+
+    </div>
+
+
 
 
 </section>

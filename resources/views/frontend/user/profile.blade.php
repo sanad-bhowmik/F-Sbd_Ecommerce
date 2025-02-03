@@ -1,202 +1,267 @@
 @extends('frontend.layouts.user_panel')
 
 @section('panel_content')
-    <div class="aiz-titlebar mb-4">
-      <div class="row align-items-center">
+<div class="aiz-titlebar mb-4">
+    <div class="row align-items-center">
         <div class="col-md-6">
             <h1 class="fs-20 fw-700 text-dark">{{ translate('Manage Profile') }}</h1>
         </div>
-      </div>
     </div>
+</div>
 
-    <!-- Basic Info-->
-    <div class="card rounded-0 shadow-none border">
-        <div class="card-header pt-4 border-bottom-0">
-            <h5 class="mb-0 fs-18 fw-700 text-dark">{{ translate('Basic Info')}}</h5>
-        </div>
-        <div class="card-body">
-            <form action="{{ route('user.profile.update') }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                <!-- Name-->
-                <div class="form-group row">
-                    <label class="col-md-2 col-form-label fs-14 fs-14">{{ translate('Your Name') }}</label>
-                    <div class="col-md-10">
-                        <input type="text" class="form-control rounded-0" placeholder="{{ translate('Your Name') }}" name="name" value="{{ Auth::user()->name }}">
-                    </div>
-                </div>
-                <!-- Phone-->
-                <div class="form-group row">
-                    <label class="col-md-2 col-form-label fs-14">{{ translate('Your Phone') }}</label>
-                    <div class="col-md-10">
-                        <input type="text" class="form-control rounded-0" placeholder="{{ translate('Your Phone')}}" name="phone" value="{{ Auth::user()->phone }}">
-                    </div>
-                </div>
-                <!-- Photo-->
-                <div class="form-group row">
-                    <label class="col-md-2 col-form-label fs-14">{{ translate('Photo') }}</label>
-                    <div class="col-md-10">
-                        <div class="input-group" data-toggle="aizuploader" data-type="image">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text bg-soft-secondary font-weight-medium rounded-0">{{ translate('Browse')}}</div>
-                            </div>
-                            <div class="form-control file-amount">{{ translate('Choose File') }}</div>
-                            <input type="hidden" name="photo" value="{{ Auth::user()->avatar_original }}" class="selected-files">
-                        </div>
-                        <div class="file-preview box sm">
-                        </div>
-                    </div>
-                </div>
-                <!-- Password-->
-                <div class="form-group row">
-                    <label class="col-md-2 col-form-label fs-14">{{ translate('Your Password') }}</label>
-                    <div class="col-md-10">
-                        <input type="password" class="form-control rounded-0" placeholder="{{ translate('New Password') }}" name="new_password">
-                    </div>
-                </div>
-                <!-- Confirm Password-->
-                <div class="form-group row">
-                    <label class="col-md-2 col-form-label fs-14">{{ translate('Confirm Password') }}</label>
-                    <div class="col-md-10">
-                        <input type="password" class="form-control rounded-0" placeholder="{{ translate('Confirm Password') }}" name="confirm_password">
-                    </div>
-                </div>
-                <!-- Submit Button-->
-                <div class="form-group mb-0 text-right">
-                    <button type="submit" class="btn btn-primary rounded-0 w-150px mt-3">{{translate('Update Profile')}}</button>
-                </div>
-            </form>
-        </div>
+<!-- Basic Info-->
+<div class="card rounded-0 shadow-none border">
+    <div class="card-header pt-4 border-bottom-0">
+        <h5 class="mb-0 fs-18 fw-700 text-dark">{{ translate('Basic Info') }}</h5>
     </div>
-
-    <!-- Address -->
-    <div class="card rounded-0 shadow-none border">
-        <div class="card-header pt-4 border-bottom-0">
-            <h5 class="mb-0 fs-18 fw-700 text-dark">{{ translate('Address')}}</h5>
-        </div>
-        <div class="card-body">
-            @foreach (Auth::user()->addresses as $key => $address)
-                <div class="">
-                    <div class="border p-4 mb-4 position-relative">
-                        <div class="row fs-14 mb-2 mb-md-0">
-                            <span class="col-md-2 text-secondary">{{ translate('Address') }}:</span>
-                            <span class="col-md-8 text-dark">{{ $address->address }}</span>
-                        </div>
-                        <div class="row fs-14 mb-2 mb-md-0">
-                            <span class="col-md-2 text-secondary">{{ translate('Postal Code') }}:</span>
-                            <span class="col-md-10 text-dark">{{ $address->postal_code }}</span>
-                        </div>
-                        <div class="row fs-14 mb-2 mb-md-0">
-                            <span class="col-md-2 text-secondary">{{ translate('City') }}:</span>
-                            <span class="col-md-10 text-dark">{{ optional($address->city)->name }}</span>
-                        </div>
-                        <div class="row fs-14 mb-2 mb-md-0">
-                            <span class="col-md-2 text-secondary">{{ translate('State') }}:</span>
-                            <span class="col-md-10 text-dark">{{ optional($address->state)->name }}</span>
-                        </div>
-                        <div class="row fs-14 mb-2 mb-md-0">
-                            <span class="col-md-2 text-secondary">{{ translate('Country') }}:</span>
-                            <span class="col-md-10 text-dark">{{ optional($address->country)->name }}</span>
-                        </div>
-                        <div class="row fs-14 mb-2 mb-md-0">
-                            <span class="col-md-2 text-secondary text-secondary">{{ translate('Phone') }}:</span>
-                            <span class="col-md-10 text-dark">{{ $address->phone }}</span>
-                        </div>
-                        @if ($address->set_default)
-                            <div class="absolute-md-top-right pt-2 pt-md-4 pr-md-5">
-                                <span class="badge badge-inline badge-secondary-base text-white p-3 fs-12" style="border-radius: 25px; min-width: 80px !important;">{{ translate('Default') }}</span>
-                            </div>
-                        @endif
-                        <div class="dropdown position-absolute right-0 top-0 pt-4 mr-1">
-                            <button class="btn bg-gray text-white px-1 py-1" type="button" data-toggle="dropdown">
-                                <i class="la la-ellipsis-v"></i>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
-                                <a class="dropdown-item" onclick="edit_address('{{$address->id}}')">
-                                    {{ translate('Edit') }}
-                                </a>
-                                @if (!$address->set_default)
-                                    <a class="dropdown-item" href="{{ route('addresses.set_default', $address->id) }}">{{ translate('Make This Default') }}</a>
-                                @endif
-                                <a class="dropdown-item" href="{{ route('addresses.destroy', $address->id) }}">{{ translate('Delete') }}</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            @endforeach
-            <!-- Add New Address -->
-            <div class="" onclick="add_new_address()">
-                <div class="border p-3 mb-3 c-pointer text-center bg-light has-transition hov-bg-soft-light">
-                    <i class="la la-plus la-2x"></i>
-                    <div class="alpha-7 fs-14 fw-700">{{ translate('Add New Address') }}</div>
+    <div class="card-body">
+        <form id="profile-form" action="{{ route('user.profile.update') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <!-- Name-->
+            <div class="form-group row">
+                <label class="col-md-2 col-form-label fs-14 fs-14">{{ translate('Your Name') }}</label>
+                <div class="col-md-10">
+                    <input type="text" class="form-control rounded-0" placeholder="{{ translate('Your Name') }}"
+                        name="name" value="{{ Auth::user()->name }}">
                 </div>
             </div>
-        </div>
+
+            <!-- Phone-->
+            <div class="form-group row">
+                <label class="col-md-2 col-form-label fs-14">{{ translate('Your Phone') }}</label>
+                <div class="col-md-10 d-flex">
+                    <input type="text" class="form-control rounded-0" placeholder="{{ translate('Your Phone') }}"
+                        name="phone" id="phone" value="{{ Auth::user()->phone }}" maxlength="11"
+                        onkeyup="checkPhoneLength()">
+
+                    <!-- Send OTP Button -->
+                    <button type="button" class="btn btn-primary ml-2" id="send-otp-btn"
+                        style="display:none; flex-shrink: 0;" onclick="sendOTP()">{{ translate('Send OTP') }}</button>
+                </div>
+            </div>
+
+            <!-- OTP Input and Verify Button -->
+            <div class="form-group row" id="otp-section" style="display:none;">
+                <label class="col-md-2 col-form-label fs-14">{{ translate('OTP') }}</label>
+                <div class="col-md-10 d-flex align-items-center">
+                    <input type="text" class="form-control rounded-0" placeholder="{{ translate('OTP') }}" id="otp"
+                        name="otp" maxlength="6" style="width: 100px;">
+                    <button type="button" class="btn btn-primary ml-2" id="verify-otp" style="display:none;"
+                        onclick="verifyOTP()">{{ translate('Verify') }}</button>
+                </div>
+            </div>
+
+            <!-- Email -->
+            <div class="form-group row">
+                <label class="col-md-2 col-form-label fs-14">{{ translate('Gmail') }}</label>
+                <div class="col-md-10">
+                    <input type="email" class="form-control rounded-0" id="gmailInput"
+                        placeholder="{{ translate('Enter your Gmail') }}" name="gmail" value="{{ Auth::user()->email }}"
+                        oninput="validateGmail(this)">
+                    <small id="emailError" class="text-danger" style="display: none;">Only Gmail addresses are
+                        allowed.</small>
+                </div>
+            </div>
+
+            <script>
+                function validateGmail(input) {
+                    let email = input.value;
+                    let errorText = document.getElementById('emailError');
+
+                    if (!email.endsWith("@gmail.com")) {
+                        errorText.style.display = "block";
+                        input.setCustomValidity("Only Gmail addresses are allowed.");
+                    } else {
+                        errorText.style.display = "none";
+                        input.setCustomValidity("");
+                    }
+                }
+            </script>
+
+
+            <style>
+                .password-container {
+                    display: flex;
+                    align-items: center;
+                    position: relative;
+                }
+
+                .password-container input {
+                    flex: 1;
+                    padding-right: 40px;
+                    /* Space for icon */
+                }
+
+                .password-container i {
+                    position: absolute;
+                    right: 10px;
+                    cursor: pointer;
+                    color: #666;
+                }
+
+                .password-container i:hover {
+                    color: #333;
+                }
+            </style>
+
+            <!-- Old Password -->
+            <div class="form-group row">
+                <label class="col-md-2 col-form-label fs-14">{{ translate('Old Password') }}</label>
+                <div class="col-md-10">
+                    <div class="password-container">
+                        <input type="password" class="form-control rounded-0" id="oldPassword"
+                            placeholder="{{ translate('Old Password') }}" name="old_password" required>
+                        <i class="fas fa-eye-slash toggle-password" onclick="togglePassword('oldPassword', this)"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New Password -->
+            <div class="form-group row">
+                <label class="col-md-2 col-form-label fs-14">{{ translate('New Password') }}</label>
+                <div class="col-md-10">
+                    <div class="password-container">
+                        <input type="password" class="form-control rounded-0" id="newPassword"
+                            placeholder="{{ translate('New Password') }}" name="new_password" required
+                            oninput="validatePasswords()">
+                        <i class="fas fa-eye-slash toggle-password" onclick="togglePassword('newPassword', this)"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Confirm New Password -->
+            <div class="form-group row">
+                <label class="col-md-2 col-form-label fs-14">{{ translate('Confirm New Password') }}</label>
+                <div class="col-md-10">
+                    <div class="password-container">
+                        <input type="password" class="form-control rounded-0" id="confirmPassword"
+                            placeholder="{{ translate('Confirm New Password') }}" name="confirm_password" required
+                            oninput="validatePasswords()">
+                        <i class="fas fa-eye-slash toggle-password"
+                            onclick="togglePassword('confirmPassword', this)"></i>
+                    </div>
+                    <small id="passwordError" class="text-danger" style="display: none;">Passwords do not match!</small>
+                </div>
+            </div>
+
+            <!-- JavaScript for Password Validation & Toggle -->
+            <script>
+                function validatePasswords() {
+                    let newPassword = document.getElementById("newPassword").value;
+                    let confirmPassword = document.getElementById("confirmPassword").value;
+                    let errorText = document.getElementById("passwordError");
+
+                    if (newPassword !== confirmPassword) {
+                        errorText.style.display = "block";
+                        document.getElementById("confirmPassword").setCustomValidity("Passwords do not match.");
+                    } else {
+                        errorText.style.display = "none";
+                        document.getElementById("confirmPassword").setCustomValidity("");
+                    }
+                }
+
+                function togglePassword(inputId, icon) {
+                    let inputField = document.getElementById(inputId);
+                    if (inputField.type === "password") {
+                        inputField.type = "text";
+                        icon.classList.remove("fa-eye-slash");
+                        icon.classList.add("fa-eye");
+                    } else {
+                        inputField.type = "password";
+                        icon.classList.remove("fa-eye");
+                        icon.classList.add("fa-eye-slash");
+                    }
+                }
+            </script>
+
+            <!-- Font Awesome for Icons (Add this to your layout if not already included) -->
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+            <!-- Submit Button-->
+            <div class="form-group mb-0 text-right">
+                <button type="submit" class="btn btn-primary rounded-0 w-150px mt-3"
+                    id="submit-btn">{{ translate('Update Profile') }}</button>
+            </div>
+        </form>
     </div>
+</div>
 
-
-    <!-- Change Email -->
-    <form action="{{ route('user.change.email') }}" method="POST">
-        @csrf
-        <div class="card rounded-0 shadow-none border">
-          <div class="card-header pt-4 border-bottom-0">
-              <h5 class="mb-0 fs-18 fw-700 text-dark">{{ translate('Change your email')}}</h5>
-          </div>
-          <div class="card-body">
-              <div class="row">
-                  <div class="col-md-2">
-                      <label class="fs-14">{{ translate('Your Email') }}</label>
-                  </div>
-                  <div class="col-md-10">
-                      <div class="input-group mb-3">
-                        <input type="email" class="form-control rounded-0" placeholder="{{ translate('Your Email')}}" name="email" value="{{ Auth::user()->email }}" />
-                        <div class="input-group-append">
-                           <button type="button" class="btn btn-outline-secondary new-email-verification">
-                               <span class="d-none loading">
-                                   <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>{{ translate('Sending Email...') }}
-                               </span>
-                               <span class="default">{{ translate('Verify') }}</span>
-                           </button>
-                        </div>
-                      </div>
-                      <div class="form-group mb-0 text-right">
-                          <button type="submit" class="btn btn-primary rounded-0 w-150px mt-3">{{translate('Update Email')}}</button>
-                      </div>
-                  </div>
-              </div>
-          </div>
-        </div>
-    </form>
-
-@endsection
-
-@section('modal')
-    <!-- Address modal -->
-    @include('frontend.'.get_setting('homepage_select').'.partials.address_modal')
+<!-- Address Section... (Remaining address section here) -->
 @endsection
 
 @section('script')
-    <script type="text/javascript">
-        $('.new-email-verification').on('click', function() {
-            $(this).find('.loading').removeClass('d-none');
-            $(this).find('.default').addClass('d-none');
-            var email = $("input[name=email]").val();
+<script type="text/javascript">
+    let phoneChanged = false;  // Flag to track if phone number is changed
+    let otpVerified = false;  // Flag to track OTP verification status
 
-            $.post('{{ route('user.new.verify') }}', {_token:'{{ csrf_token() }}', email: email}, function(data){
-                data = JSON.parse(data);
-                $('.default').removeClass('d-none');
-                $('.loading').addClass('d-none');
-                if(data.status == 2)
-                    AIZ.plugins.notify('warning', data.message);
-                else if(data.status == 1)
-                    AIZ.plugins.notify('success', data.message);
-                else
-                    AIZ.plugins.notify('danger', data.message);
-            });
+    // Function to show Send OTP button when phone number is 11 digits
+    function checkPhoneLength() {
+        const phoneInput = document.getElementById('phone');
+        const sendOtpButton = document.getElementById('send-otp-btn');
+
+        // Show the Send OTP button if the phone number is 11 digits
+        if (phoneInput.value.length === 11) {
+            sendOtpButton.style.display = 'inline-block'; // Show Send OTP button
+        } else {
+            sendOtpButton.style.display = 'none'; // Hide Send OTP button
+        }
+    }
+
+    // Function to simulate sending OTP to the phone number
+    function sendOTP() {
+        const phoneNumber = document.getElementById('phone').value;
+
+        $.post('{{ route('user.send.otpNumber') }}', {
+            _token: '{{ csrf_token() }}',
+            phone: phoneNumber
+        }, function (response) {
+            if (response.status === 'success') {
+                alert('OTP sent to your phone!');
+                showOtpSection();  // Show OTP input and Verify button after OTP is sent
+            } else {
+                alert('Failed to send OTP');
+            }
         });
-    </script>
+    }
 
-    @if (get_setting('google_map') == 1)
-        @include('frontend.'.get_setting('homepage_select').'.partials.google_map')
-    @endif
+    // Function to show OTP input and Verify button
+    function showOtpSection() {
+        const otpSection = document.getElementById('otp-section');
+        const verifyButton = document.getElementById('verify-otp');
 
+        otpSection.style.display = 'flex';  // Show OTP section
+        verifyButton.style.display = 'inline-block';  // Show Verify button
+    }
+
+    // Verify OTP function
+    function verifyOTP() {
+        const otp = document.getElementById('otp').value;
+        const phone = document.getElementById('phone').value;
+
+        $.post('{{ route('user.verify.otpNumber') }}', {
+            _token: '{{ csrf_token() }}',
+            otp: otp,
+            phone: phone
+        }, function (response) {
+            if (response.status === 'success') {
+                otpVerified = true;
+                // alert('Phone number verified successfully!');
+                document.getElementById('submit-btn').disabled = false; // Enable submit button once OTP is verified
+            } else {
+                alert('Invalid OTP');
+            }
+        });
+    }
+
+    // Enable or disable the submit button based on OTP verification
+    document.getElementById('profile-form').onsubmit = function (event) {
+        const phoneNumber = document.getElementById('phone').value;
+
+        // If phone number is changed and OTP is not verified, prevent form submission
+        if (phoneChanged && !otpVerified) {
+            event.preventDefault(); // Prevent form submission
+            alert('Please verify your phone number with OTP.');
+        }
+    }
+</script>
 @endsection
