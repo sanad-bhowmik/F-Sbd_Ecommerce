@@ -167,7 +167,7 @@ class ProductController extends Controller
         if ($request->name != "" || $request->name != null) {
             $products = $products->where('name', 'like', '%' . $request->name . '%');
         }
-        
+
         return new ProductMiniCollection(filter_products($products)->latest()->paginate(10));
     }
 
@@ -295,10 +295,10 @@ class ProductController extends Controller
             $case1 = $name . '%';
             $case2 = '%' . $name . '%';
 
-            $products->orderByRaw("CASE 
-                WHEN name LIKE '$case1' THEN 1 
-                WHEN name LIKE '$case2' THEN 2 
-                ELSE 3 
+            $products->orderByRaw("CASE
+                WHEN name LIKE '$case1' THEN 1
+                WHEN name LIKE '$case2' THEN 2
+                ELSE 3
                 END");
         }
 
@@ -358,7 +358,7 @@ class ProductController extends Controller
             $temp_str = $str == "" ? $var_str : '-' . $var_str;
             $str .= $temp_str;
         }
-        return   $this->calc($product, $str, $request, $tax);
+        return $this->calc($product, $str, $request, $tax);
 
         /*
         $product_stock = $product->stocks->where('variant', $str)->first();

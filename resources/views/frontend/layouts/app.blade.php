@@ -1302,7 +1302,7 @@
             $('#addToCart-modal-body').html(null);
             $('#addToCart').modal();
             $('.c-preloader').show();
-            $.post('{{ route('cart.showCartModal') }}', { _token: AIZ.data.csrf, id: id }, function (data) {
+            $.post('{{ route(' ') }}', { _token: AIZ.data.csrf, id: id }, function (data) {
                 $('.c-preloader').hide();
                 $('#addToCart-modal-body').html(data);
                 AIZ.plugins.slickCarousel();
@@ -1507,7 +1507,7 @@
                     }
                     return selectedCountryPlaceholder;
                 }
-                                                });
+                                                        });
 
             var country = iti.getSelectedCountryData();
             $('input[name=country_code]').val(country.dialCode);

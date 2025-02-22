@@ -243,7 +243,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['app_language']], function () {
 
     //Use this route outside of auth because initialy we created outside of auth we do not need auth initialy
     //We can't change it now because we didn't send token in header from mobile app.
-    //We need the upload update Flutter app then we will write it in auth middleware. 
+    //We need the upload update Flutter app then we will write it in auth middleware.
     Route::controller(CustomerPackageController::class)->group(function () {
         Route::get("customer-packages", "customer_packages_list");
     });

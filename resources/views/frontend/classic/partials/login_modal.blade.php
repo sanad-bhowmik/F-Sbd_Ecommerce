@@ -8,27 +8,56 @@
             <div class="modal-header">
                 <h6 class="modal-title fw-600">{{ translate('Login') }}</h6>
                 <button type="button" class="close" data-dismiss="modal">
-                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
                 <div class="p-3">
+                    <div class="text-center mb-3" style="border: 1px solid lightgray;background-color: #EFEFF2;">
+                        <button id="toggle-login-mode" class="btn btn-light btn-block">
+                            <i class="fas fa-phone"></i> Login with Phone
+                        </button>
+                    </div>
                     <form class="form-default" role="form" action="{{ route('cart.login.submit') }}" method="POST">
                         @csrf
                         <div class="form-group">
-                            <input type="tel" name="phone" class="form-control" placeholder="Enter your phone number"
-                                autocomplete="off" required>
+                            <input type="text" id="login-input" name="login" class="form-control"
+                                placeholder="Enter Email" autocomplete="off" required>
                         </div>
+                        <!-- Include Font Awesome if not already added -->
+                        <link rel="stylesheet"
+                            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
                         <div class="form-group position-relative">
                             <input type="password" id="password-login" name="password" class="form-control"
                                 placeholder="Enter your password" required>
                             <span class="password-toggle position-absolute"
                                 style="right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;">
-                                <i class="fas fa-eye" id="togglePasswordIcon-login"></i>
+                                <i class="fa fa-eye" id="togglePasswordIcon-login"></i>
                             </span>
                         </div>
+
+                        <script>
+                            document.addEventListener("DOMContentLoaded", function () {
+                                const togglePasswordIcon = document.getElementById('togglePasswordIcon-login');
+                                const passwordInput = document.getElementById('password-login');
+
+                                togglePasswordIcon.addEventListener('click', function () {
+                                    // Toggle input type
+                                    if (passwordInput.type === 'password') {
+                                        passwordInput.type = 'text';
+                                        togglePasswordIcon.classList.remove('fa-eye');
+                                        togglePasswordIcon.classList.add('fa-eye-slash');
+                                    } else {
+                                        passwordInput.type = 'password';
+                                        togglePasswordIcon.classList.remove('fa-eye-slash');
+                                        togglePasswordIcon.classList.add('fa-eye');
+                                    }
+                                });
+                            });
+                        </script>
+
                         <div class="row mb-2 align-items-center">
-                            <!-- Remember Me Checkbox -->
                             <div class="col-6">
                                 <div class="form-check">
                                     <input type="checkbox" class="form-check-input" id="remember" name="remember">
@@ -37,8 +66,6 @@
                                     </label>
                                 </div>
                             </div>
-
-                            <!-- Forgot Password Link -->
                             <div class="col-6 text-right">
                                 <a href="{{ route('password.request') }}"
                                     class="text-reset opacity-80 hov-opacity-100 fs-14">
@@ -46,13 +73,13 @@
                                 </a>
                             </div>
                         </div>
-
-                        <div class="mb-5">
-                            <button type="submit"
-                                class="btn btn-primary btn-block fw-600">{{ translate('Login') }}</button>
+                        <div class="mb-2">
+                            <button type="submit" class="btn btn-primary btn-block fw-600">
+                                {{ translate('Login') }}
+                            </button>
                         </div>
                     </form>
-                    <div class="text-center">
+                    <div class="text-center mt-3">
                         <p class="text-muted mb-0">{{ translate('Don\'t have an account?') }}</p>
                         <button class="btn btn-link p-0 text-primary" type="button" data-toggle="modal"
                             data-target="#registration_modal" data-dismiss="modal">
@@ -64,6 +91,32 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const toggleButton = document.getElementById("toggle-login-mode");
+        const loginInput = document.getElementById("login-input");
+        let isEmailMode = true;
+
+        toggleButton.addEventListener("click", function () {
+            if (isEmailMode) {
+                loginInput.placeholder = "Enter Your Phone";
+                loginInput.setAttribute("type", "tel");
+                loginInput.setAttribute("pattern", "[0-9]{11}");
+                loginInput.setAttribute("oninput", "this.value=this.value.replace(/[^0-9]/g,'')");
+                toggleButton.innerHTML = '<i class="fas fa-envelope"></i> Login with Email';
+            } else {
+                loginInput.placeholder = "Enter Your Email";
+                loginInput.setAttribute("type", "email");
+                loginInput.removeAttribute("pattern");
+                loginInput.setAttribute("oninput", "this.value=this.value.replace(/[^a-zA-Z0-9@._-]/g,'')");
+                toggleButton.innerHTML = '<i class="fas fa-phone"></i> Login with Phone';
+            }
+            loginInput.value = ""; // Clear input when switching modes
+            isEmailMode = !isEmailMode;
+        });
+    });
+</script>
 
 
 <!-- Registration Modal -->
@@ -107,9 +160,40 @@
                         </div>
                         <div id="step3" style="display: none;">
                             <div class="form-group">
-                                <input type="password" id="password" name="password" class="form-control"
-                                    placeholder="Enter your password" required>
+                                <div class="input-group">
+                                    <input type="password" id="password" name="password" class="form-control"
+                                        placeholder="Enter your password" required>
+                                    <div class="input-group-append">
+                                        <span class="input-group-text" id="togglePassword" style="cursor: pointer;">
+                                            <i class="fa fa-eye" id="eyeIcon"></i>
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
+
+                            <!-- Add Font Awesome CDN for the eye icon -->
+                            <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+                                rel="stylesheet">
+
+                            <script>
+                                // Toggle password visibility
+                                document.getElementById('togglePassword').addEventListener('click', function () {
+                                    const passwordField = document.getElementById('password');
+                                    const eyeIcon = document.getElementById('eyeIcon');
+
+                                    // Check current type of password field and toggle it
+                                    if (passwordField.type === 'password') {
+                                        passwordField.type = 'text';
+                                        eyeIcon.classList.remove('fa-eye'); // Remove eye icon
+                                        eyeIcon.classList.add('fa-eye-slash'); // Add eye-slash icon
+                                    } else {
+                                        passwordField.type = 'password';
+                                        eyeIcon.classList.remove('fa-eye-slash'); // Remove eye-slash icon
+                                        eyeIcon.classList.add('fa-eye'); // Add eye icon
+                                    }
+                                });
+                            </script>
+
                             <!-- Added the checkbox section here -->
                             <div class="mb-3 upper-fields">
                                 <label class="aiz-checkbox">

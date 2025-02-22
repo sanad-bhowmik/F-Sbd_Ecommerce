@@ -18,7 +18,7 @@
 
                 <!--Assign Delivery Boy-->
                 @if ($order->seller_id == $admin_user_id || get_setting('product_manage_by_admin') == 1)
-                    
+
                     @if (addon_is_activated('delivery_boy'))
                         <div class="col-md-3 ml-auto">
                             <label for="assign_deliver_boy">{{ translate('Assign Deliver Boy') }}</label>

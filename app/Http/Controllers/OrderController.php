@@ -22,6 +22,8 @@ use App\Utility\NotificationUtility;
 use CoreComponentRepository;
 use App\Utility\SmsUtility;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Http;
+
 
 class OrderController extends Controller
 {
@@ -31,7 +33,7 @@ class OrderController extends Controller
         // Staff Permission Check
         $this->middleware(['permission:view_all_orders|view_inhouse_orders|view_seller_orders|view_pickup_point_orders'])->only('all_orders');
         $this->middleware(['permission:view_order_details'])->only('show');
-        $this->middleware(['permission:delete_order'])->only('destroy','bulk_order_delete');
+        $this->middleware(['permission:delete_order'])->only('destroy', 'bulk_order_delete');
     }
 
     // All Orders
@@ -147,14 +149,14 @@ class OrderController extends Controller
 
         $shippingAddress = [];
         if ($address != null) {
-            $shippingAddress['name']        = Auth::user()->name;
-            $shippingAddress['email']       = Auth::user()->email;
-            $shippingAddress['address']     = $address->address;
-            $shippingAddress['country']     = $address->country->name;
-            $shippingAddress['state']       = $address->state->name;
-            $shippingAddress['city']        = $address->city->name;
+            $shippingAddress['name'] = Auth::user()->name;
+            $shippingAddress['email'] = Auth::user()->email;
+            $shippingAddress['address'] = $address->address;
+            $shippingAddress['country'] = $address->country->name;
+            $shippingAddress['state'] = $address->state->name;
+            $shippingAddress['city'] = $address->city->name;
             $shippingAddress['postal_code'] = $address->postal_code;
-            $shippingAddress['phone']       = $address->phone;
+            $shippingAddress['phone'] = $address->phone;
             if ($address->latitude || $address->longitude) {
                 $shippingAddress['lat_lang'] = $address->latitude . ',' . $address->longitude;
             }
@@ -209,7 +211,7 @@ class OrderController extends Controller
                 $product = Product::find($cartItem['product_id']);
 
                 $subtotal += cart_product_price($cartItem, $product, false, false) * $cartItem['quantity'];
-                $tax +=  cart_product_tax($cartItem, $product, false) * $cartItem['quantity'];
+                $tax += cart_product_tax($cartItem, $product, false) * $cartItem['quantity'];
                 $coupon_discount += $cartItem['discount'];
 
                 $product_variation = $cartItem['variation'];
@@ -243,7 +245,7 @@ class OrderController extends Controller
                 if (addon_is_activated('club_point')) {
                     $order_detail->earn_point = $product->earn_point;
                 }
-                
+
                 $order_detail->save();
 
                 $product->num_of_sale += $cartItem['quantity'];
@@ -251,7 +253,7 @@ class OrderController extends Controller
 
                 $order->seller_id = $product->user_id;
                 $order->shipping_type = $cartItem['shipping_type'];
-                
+
                 if ($cartItem['shipping_type'] == 'pickup_point') {
                     $order->pickup_point_id = $cartItem['pickup_point'];
                 }
@@ -294,7 +296,7 @@ class OrderController extends Controller
 
         $combined_order->save();
 
-        foreach($combined_order->orders as $order){
+        foreach ($combined_order->orders as $order) {
             NotificationUtility::sendOrderPlacedNotification($order);
         }
 
@@ -381,6 +383,7 @@ class OrderController extends Controller
         return view('seller.order_details_seller', compact('order'));
     }
 
+
     public function update_delivery_status(Request $request)
     {
         $order = Order::findOrFail($request->order_id);
@@ -395,85 +398,55 @@ class OrderController extends Controller
         }
 
         if (Auth::user()->user_type == 'seller') {
-            foreach ($order->orderDetails->where('seller_id', Auth::user()->id) as $key => $orderDetail) {
+            foreach ($order->orderDetails->where('seller_id', Auth::user()->id) as $orderDetail) {
                 $orderDetail->delivery_status = $request->status;
                 $orderDetail->save();
-
-                if ($request->status == 'cancelled') {
-                    $variant = $orderDetail->variation;
-                    if ($orderDetail->variation == null) {
-                        $variant = '';
-                    }
-
-                    $product_stock = ProductStock::where('product_id', $orderDetail->product_id)
-                        ->where('variant', $variant)
-                        ->first();
-
-                    if ($product_stock != null) {
-                        $product_stock->qty += $orderDetail->quantity;
-                        $product_stock->save();
-                    }
-                }
             }
         } else {
-            foreach ($order->orderDetails as $key => $orderDetail) {
-
+            foreach ($order->orderDetails as $orderDetail) {
                 $orderDetail->delivery_status = $request->status;
                 $orderDetail->save();
-
-                if ($request->status == 'cancelled') {
-                    $variant = $orderDetail->variation;
-                    if ($orderDetail->variation == null) {
-                        $variant = '';
-                    }
-
-                    $product_stock = ProductStock::where('product_id', $orderDetail->product_id)
-                        ->where('variant', $variant)
-                        ->first();
-
-                    if ($product_stock != null) {
-                        $product_stock->qty += $orderDetail->quantity;
-                        $product_stock->save();
-                    }
-                }
-
-                if (addon_is_activated('affiliate_system')) {
-                    if (($request->status == 'delivered' || $request->status == 'cancelled') &&
-                        $orderDetail->product_referral_code
-                    ) {
-
-                        $no_of_delivered = 0;
-                        $no_of_canceled = 0;
-
-                        if ($request->status == 'delivered') {
-                            $no_of_delivered = $orderDetail->quantity;
-                        }
-                        if ($request->status == 'cancelled') {
-                            $no_of_canceled = $orderDetail->quantity;
-                        }
-
-                        $referred_by_user = User::where('referral_code', $orderDetail->product_referral_code)->first();
-
-                        $affiliateController = new AffiliateController;
-                        $affiliateController->processAffiliateStats($referred_by_user->id, 0, 0, $no_of_delivered, $no_of_canceled);
-                    }
-                }
             }
         }
+
+        // Send notification
+        NotificationUtility::sendNotification($order, $request->status);
+
+        // If order is confirmed, send SMS to the user
+        if ($request->status == 'confirmed') {
+            try {
+                $number = json_decode($order->shipping_address)->phone;
+                $product_name = $order->orderDetails->first()->product->name ?? 'আপনার পণ্য';
+
+                $message = "প্রিয় গ্রাহক,\nআপনার অর্ডার সফলভাবে কনফার্ম করা হয়েছে! ✅\nঅর্ডার আইডি: {$order->code}\nপ্রোডাক্ট: {$product_name}\nআপনার অর্ডার দ্রুত ডেলিভারির জন্য প্রস্তুত করা হচ্ছে। বিস্তারিত জানতে কল করুন: 01897608888\nCelcom Bazar-এর সাথে থাকার জন্য ধন্যবাদ!\n— Celcom Bazar টিম";
+
+                $url = "http://103.53.84.15:8746/sendtext";
+                $response = Http::get($url, [
+                    'apikey' => 'dfbd6568d15577db',
+                    'secretkey' => '61784eda',
+                    'callerID' => '8809612444767',
+                    'toUser' => $number,
+                    'messageContent' => $message,
+                ]);
+
+            } catch (\Exception $e) {
+                \Log::error("SMS পাঠানো ব্যর্থ: " . $e->getMessage());
+            }
+        }
+
         if (addon_is_activated('otp_system') && SmsTemplate::where('identifier', 'delivery_status_change')->first()->status == 1) {
             try {
                 SmsUtility::delivery_status_change(json_decode($order->shipping_address)->phone, $order);
             } catch (\Exception $e) {
+                \Log::error("OTP SMS পাঠানোর সময় সমস্যা হয়েছে: " . $e->getMessage());
             }
         }
 
-        //sends Notifications to user
-        NotificationUtility::sendNotification($order, $request->status);
         if (get_setting('google_firebase') == 1 && $order->user->device_token != null) {
             $request->device_token = $order->user->device_token;
-            $request->title = "Order updated !";
-            $status = str_replace("_", "", $order->delivery_status);
-            $request->text = " Your order {$order->code} has been {$status}";
+            $request->title = "Order updated!";
+            $status = str_replace("_", " ", $order->delivery_status);
+            $request->text = "Your order {$order->code} has been {$status}";
 
             $request->type = "order";
             $request->id = $order->id;
@@ -482,7 +455,6 @@ class OrderController extends Controller
             NotificationUtility::sendFirebaseNotification($request);
         }
 
-
         if (addon_is_activated('delivery_boy')) {
             if (Auth::user()->user_type == 'delivery_boy') {
                 $deliveryBoyController = new DeliveryBoyController;
@@ -490,8 +462,10 @@ class OrderController extends Controller
             }
         }
 
-        return 1;
+        return response()->json(['success' => true, 'message' => 'Delivery status updated.']);
     }
+
+    // return response()->json(['success' => true, 'message' => 'Delivery status updated.']);
 
     public function update_tracking_code(Request $request)
     {

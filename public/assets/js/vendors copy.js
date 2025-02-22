@@ -70053,7 +70053,7 @@ Bootstrap Notify
     countUrl: "",
     onClick: function(event) {
         event.preventDefault();  // Prevent default action
-
+        
         // Get the current page URL
         var currentUrl = window.location.href;
 

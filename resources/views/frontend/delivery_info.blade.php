@@ -77,7 +77,7 @@
                                         $seller_product_variation[] = $cartItem['variation'];
                                     }
                                 }
-                                
+
                                 $pickup_point_list = array();
                                 if (get_setting('pickup_point') == 1) {
                                     $pickup_point_list = get_all_pickup_points();
@@ -373,7 +373,7 @@
                                                         @endif
                                                     </div>
                                                 </div>
-                                                
+
                                                 <!-- Carrier Wise Shipping -->
                                                 @if (get_setting('shipping_type') == 'carrier_wise_shipping')
                                                     <div class="row pt-3 carrier_id_{{ $key }}">
@@ -463,3 +463,4 @@
         }
     </script>
 @endsection
+

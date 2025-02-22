@@ -11,16 +11,38 @@
         @endphp
         <!-- Image -->
         <a href="{{ $product_url }}" class="d-block h-100">
-            <img class="lazyload mx-auto img-fit has-transition"
-                src="{{ get_image($product->thumbnail) }}"
+            <img class="lazyload mx-auto img-fit has-transition" src="{{ get_image($product->thumbnail) }}"
                 alt="{{ $product->getTranslation('name') }}" title="{{ $product->getTranslation('name') }}"
                 onerror="this.onerror=null;this.src='{{ static_asset('assets/img/placeholder.jpg') }}';">
         </a>
-        <!-- Discount percentage tag -->
         @if (discount_in_percentage($product) > 0)
-            <span class="absolute-top-left bg-primary ml-1 mt-1 fs-11 fw-700 text-white w-35px text-center"
-                style="padding-top:2px;padding-bottom:2px;">-{{ discount_in_percentage($product) }}%</span>
+            <div class="discount-badge">
+                {{ discount_in_percentage($product) }}% <br> OFF
+            </div>
         @endif
+
+        <style>
+            .discount-badge {
+                position: absolute;
+                top: 0;
+                left: 5px;
+                background: url('https://www.arogga.com/_next/static/media/pdiscount.93e788ec.svg') no-repeat center;
+                background-size: cover;
+                color: white;
+                padding: 10px 15px;
+                font-size: 11px;
+                font-weight: 700;
+                text-align: center;
+                width: 50px;
+                /* Adjust as needed */
+                height: 50px;
+                /* Adjust as needed */
+                z-index: 1;
+            }
+        </style>
+
+
+
         <!-- Wholesale tag -->
         @if ($product->wholesale_product)
             <span class="absolute-top-left fs-11 text-white fw-700 px-2 lh-1-8 ml-1 mt-1"
@@ -54,35 +76,28 @@
                     </svg>
                 </a>
             </div>
-            <!-- add to cart -->
-            <a class="cart-btn absolute-bottom-left w-100 h-35px aiz-p-hov-icon text-white fs-13 fw-700 d-flex flex-column justify-content-center align-items-center @if (in_array($product->id, $cart_added)) active @endif"
-                href="javascript:void(0)"
-                @if (Auth::check()) onclick="showAddToCartModal({{ $product->id }})" @else onclick="showLoginModal()" @endif>
-                <span class="cart-btn-text">
-                    {{ translate('Add to Cart') }}
-                </span>
-                <span><i class="las la-2x la-shopping-cart"></i></span>
-            </a>
+
         @endif
         @if (
             $product->auction_product == 1 &&
-                $product->auction_start_date <= strtotime('now') &&
-                $product->auction_end_date >= strtotime('now'))
-            <!-- Place Bid -->
-            @php
-                $carts = get_user_cart();
-                if (count($carts) > 0) {
-                    $cart_added = $carts->pluck('product_id')->toArray();
-                }
-                $highest_bid = $product->bids->max('amount');
-                $min_bid_amount = $highest_bid != null ? $highest_bid + 1 : $product->starting_bid;
-            @endphp
-            <a class="cart-btn absolute-bottom-left w-100 h-35px aiz-p-hov-icon text-white fs-13 fw-700 d-flex flex-column justify-content-center align-items-center @if (in_array($product->id, $cart_added)) active @endif"
-                href="javascript:void(0)" onclick="bid_single_modal({{ $product->id }}, {{ $min_bid_amount }})">
-                <span class="cart-btn-text">{{ translate('Place Bid') }}</span>
-                <br>
-                <span><i class="las la-2x la-gavel"></i></span>
-            </a>
+            $product->auction_start_date <= strtotime('now') &&
+            $product->auction_end_date >= strtotime('now')
+        )
+                    <!-- Place Bid -->
+                    @php
+                        $carts = get_user_cart();
+                        if (count($carts) > 0) {
+                            $cart_added = $carts->pluck('product_id')->toArray();
+                        }
+                        $highest_bid = $product->bids->max('amount');
+                        $min_bid_amount = $highest_bid != null ? $highest_bid + 1 : $product->starting_bid;
+                    @endphp
+                    <a class="cart-btn absolute-bottom-left w-100 h-35px aiz-p-hov-icon text-white fs-13 fw-700 d-flex flex-column justify-content-center align-items-center @if (in_array($product->id, $cart_added)) active @endif"
+                        href="javascript:void(0)" onclick="bid_single_modal({{ $product->id }}, {{ $min_bid_amount }})">
+                        <span class="cart-btn-text">{{ translate('Place Bid') }}</span>
+                        <br>
+                        <span><i class="las la-2x la-gavel"></i></span>
+                    </a>
         @endif
     </div>
 
@@ -92,25 +107,65 @@
             <a href="{{ $product_url }}" class="d-block text-reset hov-text-primary"
                 title="{{ $product->getTranslation('name') }}">{{ $product->getTranslation('name') }}</a>
         </h3>
-        <div class="fs-14 d-flex justify-content-center mt-3">
+        <div class="fs-14 d-flex justify-content-center mb-3 mt-1">
             @if ($product->auction_product == 0)
                 <!-- Previous price -->
                 @if (home_base_price($product) != home_discounted_base_price($product))
-                    <div class="disc-amount has-transition">
+                    <div id="previousPrice" class="has-transition dPrice">
                         <del class="fw-400 text-secondary mr-1">{{ home_base_price($product) }}</del>
                     </div>
                 @endif
                 <!-- price -->
-                <div class="">
+                <div class="pPrice">
                     <span class="fw-700 text-primary">{{ home_discounted_base_price($product) }}</span>
                 </div>
             @endif
             @if ($product->auction_product == 1)
                 <!-- Bid Amount -->
-                <div class="">
+                <div>
                     <span class="fw-700 text-primary">{{ single_price($product->starting_bid) }}</span>
                 </div>
             @endif
         </div>
+
+        <script>
+            function handleClassOnResize() {
+                const previousPriceElement = document.getElementById('previousPrice');
+                if (window.innerWidth <= 768) {
+                    // Add the 'disc-amount' class for mobile screens
+                    previousPriceElement.classList.add('disc-amount');
+                } else {
+                    // Ensure the class is not present for larger screens
+                    previousPriceElement.classList.remove('disc-amount');
+                }
+            }
+
+            // Initial check when the page loads
+            handleClassOnResize();
+
+            // Add event listener for window resize
+            window.addEventListener('resize', handleClassOnResize);
+        </script>
+
     </div>
+    <style>
+        @media (max-width: 768px) {
+            .pPrice {
+                font-size: 10px !important;
+            }
+
+            .dPrice {
+                font-size: 10px !important;
+            }
+        }
+    </style>
+    <!-- add to cart -->
+    <a class="cart-btn absolute-bottom-left w-100 h-35px aiz-p-hov-icon text-white fs-13 fw-700 d-flex flex-column justify-content-center align-items-center @if (in_array($product->id, $cart_added)) active @endif"
+        href="javascript:void(0)" @if (Auth::check()) onclick="showAddToCartModal({{ $product->id }})" @else
+        onclick="showLoginModal()" @endif>
+        <span class="cart-btn-text">
+            {{ translate('Add to Cart') }}
+        </span>
+        <span><i class="las la-2x la-shopping-cart"></i></span>
+    </a>
 </div>

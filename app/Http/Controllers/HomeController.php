@@ -8,6 +8,7 @@ use Mail;
 use Cache;
 use Cookie;
 use App\Models\Page;
+use App\Models\ProductStock;
 use App\Models\Shop;
 use App\Models\User;
 use App\Models\Brand;
@@ -45,6 +46,28 @@ class HomeController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    public function sendMail(Request $request)
+    {
+        $email = $request->input('email');
+
+        // Validate Email Address (Only Gmail Allowed)
+        if (!str_ends_with($email, '@gmail.com')) {
+            return response()->json(['message' => 'Only Gmail addresses are allowed'], 400);
+        }
+
+        // Generate 6-digit OTP
+        $otp = rand(100000, 999999);
+
+        // Send OTP via Email Without Mailable Class
+        Mail::raw("Your OTP code is: $otp", function ($message) use ($email) {
+            $message->to($email)
+                ->subject('Your OTP Code')
+                ->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'));
+        });
+
+        return response()->json(['message' => 'OTP sent successfully!']);
+    }
+
     public function savelater(Request $request)
     {
         if (!Auth::check()) {
@@ -72,7 +95,63 @@ class HomeController extends Controller
         return response()->json(['message' => 'Product saved for later'], 200);
     }
 
+    public function sendOtpNumber(Request $request)
+    {
+        $request->validate([
+            'phone' => 'required|numeric|digits:11',
+        ]);
 
+        $number = $request->phone;
+        $otp = rand(1000, 9999);
+
+        $user = User::updateOrCreate(
+            ['phone' => $number],
+            ['verification_code' => $otp, 'email_verified_at' => null]
+        );
+
+        $url = "http://103.53.84.15:8746/sendtext";
+        $response = Http::get($url, [
+            'apikey' => 'dfbd6568d15577db',
+            'secretkey' => '61784eda',
+            'callerID' => '8809612444767',
+            'toUser' => $number,
+            'messageContent' => "Your OTP is: $otp\nPlease use this code to verify your number.\nThanks For Staying with www.celcombazar.com",
+        ]);
+
+        // Log SMS details for debugging
+        SmsLog::create([
+            'from' => 'Registration',
+            'to' => '88' . $number,
+            'otp' => $otp,
+            'message' => "Your OTP is: $otp\nPlease use this code to verify your number.\nThanks For Staying with www.celcombazar.com",
+            'status' => $response->body(),
+            'sent_by' => "System",
+        ]);
+
+        return response()->json(['status' => 'success', 'message' => 'OTP sent successfully!']);
+    }
+    public function verifyOtpNumber(Request $request)
+    {
+        $request->validate([
+            'phone' => 'required|numeric|digits:11',
+            'otp' => 'required|numeric|digits:4',
+        ]);
+
+        $user = User::where('phone', $request->phone)->first();
+
+        if (!$user) {
+            return response()->json(['status' => 'error', 'message' => 'User not found.']);
+        }
+
+        if ($user->verification_code == $request->otp) {
+            $user->email_verified_at = now();
+            $user->save();
+
+            return response()->json(['status' => 'success', 'message' => 'Phone number verified successfully!']);
+        } else {
+            return response()->json(['status' => 'error', 'message' => 'Invalid OTP.']);
+        }
+    }
 
 
     public function index()
@@ -105,7 +184,14 @@ class HomeController extends Controller
     {
         return view('frontend.' . get_setting('homepage_select') . '.partials.featured_products_section');
     }
-
+    public function faq()
+    {
+        return view('frontend.faq');
+    }
+    public function contact()
+    {
+        return view('frontend.contact');
+    }
     public function load_best_selling_section()
     {
         return view('frontend.' . get_setting('homepage_select') . '.partials.best_selling_section');
@@ -211,11 +297,9 @@ class HomeController extends Controller
             return response()->json(['success' => false, 'message' => 'This phone number is already registered.']);
         }
 
-        // If the phone number doesn't exist, proceed to generate OTP
         $number = $request->phone;
         $otp = rand(1000, 9999); // Generate OTP
 
-        // Save OTP to the database with unverified status (no password needed)
         $user = User::create([
             'phone' => $number,
             'verification_code' => $otp, // Store OTP in database
@@ -229,7 +313,7 @@ class HomeController extends Controller
             'secretkey' => '61784eda',
             'callerID' => '8809612444767',
             'toUser' => $number,
-            'messageContent' => "Your OTP is: $otp\nPlease use this code to verify your number.\nThanks For Staying with www.amaderbazar.net",
+            'messageContent' => "Your OTP is: $otp\nPlease use this code to verify your number.\nThanks For Staying with www.celcombazar.com",
         ]);
 
         // Log SMS details for debugging
@@ -237,70 +321,14 @@ class HomeController extends Controller
             'from' => 'Registration',
             'to' => '88' . $number,
             'otp' => $otp,
-            'message' => "Your OTP is: $otp\nPlease use this code to verify your number.\nThanks For Staying with www.amaderbazar.net",
+            'message' => "Your OTP is: $otp\nPlease use this code to verify your number.\nThanks For Staying with www.celcombazar.com",
             'status' => $response->body(),
             'sent_by' => "System",
         ]);
 
         return response()->json(['success' => true, 'message' => 'OTP sent successfully.']);
     }
-    public function sendOtpNumber(Request $request)
-    {
-        $request->validate([
-            'phone' => 'required|numeric|digits:11',
-        ]);
 
-        $number = $request->phone;
-        $otp = rand(1000, 9999);
-
-        $user = User::updateOrCreate(
-            ['phone' => $number],
-            ['verification_code' => $otp, 'email_verified_at' => null]
-        );
-
-        $url = "http://103.53.84.15:8746/sendtext";
-        $response = Http::get($url, [
-            'apikey' => 'dfbd6568d15577db',
-            'secretkey' => '61784eda',
-            'callerID' => '8809612444767',
-            'toUser' => $number,
-            'messageContent' => "Your OTP is: $otp\nPlease use this code to verify your number.\nThanks For Staying with www.amaderbazar.net",
-        ]);
-
-        // Log SMS details for debugging
-        SmsLog::create([
-            'from' => 'Registration',
-            'to' => '88' . $number,
-            'otp' => $otp,
-            'message' => "Your OTP is: $otp\nPlease use this code to verify your number.\nThanks For Staying with www.amaderbazar.net",
-            'status' => $response->body(),
-            'sent_by' => "System",
-        ]);
-
-        return response()->json(['status' => 'success', 'message' => 'OTP sent successfully!']);
-    }
-    public function verifyOtpNumber(Request $request)
-    {
-        $request->validate([
-            'phone' => 'required|numeric|digits:11',
-            'otp' => 'required|numeric|digits:4',
-        ]);
-
-        $user = User::where('phone', $request->phone)->first();
-
-        if (!$user) {
-            return response()->json(['status' => 'error', 'message' => 'User not found.']);
-        }
-
-        if ($user->verification_code == $request->otp) {
-            $user->email_verified_at = now();
-            $user->save();
-
-            return response()->json(['status' => 'success', 'message' => 'Phone number verified successfully!']);
-        } else {
-            return response()->json(['status' => 'error', 'message' => 'Invalid OTP.']);
-        }
-    }
 
     public function verifyOTP(Request $request)
     {
@@ -336,36 +364,32 @@ class HomeController extends Controller
     public function cart_login(Request $request)
     {
         $user = null;
+        $loginInput = $request->input('login'); // Can be email or phone
 
-        if ($request->has('phone')) {
-            $countryCode = $request->get('country_code', '');
-            $phone = $countryCode ? "+{$countryCode}{$request->phone}" : $request->phone;
-
-            $user = User::whereIn('user_type', ['customer', 'seller', 'admin'])->where('phone', $phone)->first();
-        } elseif ($request->has('email')) {
-            $user = User::whereIn('user_type', ['customer', 'seller', 'admin'])->where('email', $request->email)->first();
-        }
-
-        if ($user) {
-            if (Hash::check($request->password, $user->password)) {
-                if ($request->has('remember')) {
-                    auth()->login($user, true);
-                } else {
-                    auth()->login($user, false);
-                }
-
-                if ($user->user_type === 'admin') {
-                    return redirect('/admin');
-                } else {
-                    return redirect()->route('dashboard');
-                }
-            } else {
-                flash(translate('Invalid password!'))->warning();
-            }
+        if (filter_var($loginInput, FILTER_VALIDATE_EMAIL)) {
+            // Login using email
+            $user = User::whereIn('user_type', ['customer', 'seller', 'admin'])
+                ->where('email', $loginInput)
+                ->first();
         } else {
-            flash(translate('Invalid phone or email!'))->warning();
+            // Login using phone
+            $countryCode = $request->input('country_code', '');
+            $formattedPhone = $countryCode ? "+{$countryCode}{$loginInput}" : $loginInput;
+
+            $user = User::whereIn('user_type', ['customer', 'seller', 'admin'])
+                ->where('phone', $formattedPhone)
+                ->first();
         }
 
+        // Check if user exists
+        if ($user && Hash::check($request->password, $user->password)) {
+            auth()->login($user, $request->has('remember'));
+
+            return $user->user_type === 'admin' ? redirect('/admin') : redirect()->route('dashboard');
+        }
+
+        // If user not found or password incorrect
+        flash(translate('Invalid phone, email, or password!'))->warning();
         return back();
     }
 
@@ -430,32 +454,65 @@ class HomeController extends Controller
             return view('frontend.user.profile');
         }
     }
-
     public function userProfileUpdate(Request $request)
     {
+        // Check if DEMO_MODE is enabled
         if (env('DEMO_MODE') == 'On') {
-            flash(translate('Sorry! the action is not permitted in demo '))->error();
+            flash(translate('Sorry! The action is not permitted in demo mode.'))->error();
             return back();
         }
 
+        // Get the currently authenticated user
         $user = Auth::user();
-        $user->name = $request->name;
-        $user->address = $request->address;
-        $user->country = $request->country;
-        $user->city = $request->city;
-        $user->postal_code = $request->postal_code;
-        $user->phone = $request->phone;
 
-        if ($request->new_password != null && ($request->new_password == $request->confirm_password)) {
+        // ✅ Validate old password if provided
+        if ($request->filled('old_password')) {
+            // Check if the old password matches the stored password
+            if (!Hash::check($request->old_password, $user->password)) {
+                // Old password is incorrect, return with an error message
+                return back()->withErrors(['old_password' => 'The old password is incorrect.']);
+            }
+
+            // ✅ Check if old password matches new password
+            if ($request->old_password == $request->new_password) {
+                // Old and new password cannot be the same
+                return back()->withErrors(['new_password' => 'The new password cannot be the same as the old password.']);
+            }
+        }
+
+        // ✅ Update user details (only fill the fields that are not null or empty)
+        $user->name = $request->name ?? $user->name;
+        $user->address = $request->address ?? $user->address;
+        $user->country = $request->country ?? $user->country;
+        $user->city = $request->city ?? $user->city;
+        $user->postal_code = $request->postal_code ?? $user->postal_code;
+
+        // ✅ Update phone number if provided (new phone number from input)
+        if ($request->filled('new-number') && $request->input('new-number') != $user->phone) {
+            $user->phone = $request->input('new-number');
+        }
+
+
+        // ✅ Update email if provided and it is different from the current one
+        if ($request->filled('gmail') && $request->gmail != $user->email) {
+            $user->email = $request->gmail;
+        }
+
+        // ✅ Password Update (Only if old password matches and new password is provided)
+        if ($request->filled('new_password') && $request->new_password == $request->confirm_password) {
+            // Make sure the new password matches the confirmation
             $user->password = Hash::make($request->new_password);
         }
 
-        $user->avatar_original = $request->photo;
+        // Save the updated user details
         $user->save();
 
-        flash(translate('Your Profile has been updated successfully!'))->success();
+        // Flash success message and redirect back
+        flash(translate('Your profile has been updated successfully!'))->success();
         return back();
     }
+
+
 
     public function flash_deal_details($slug)
     {
@@ -484,7 +541,11 @@ class HomeController extends Controller
             session(['link' => url()->current()]);
         }
 
-        $detailedProduct = Product::with('reviews', 'brand', 'stocks', 'user', 'user.shop')->where('auction_product', 0)->where('slug', $slug)->where('approved', 1)->first();
+        $detailedProduct = Product::with('reviews', 'brand', 'stocks', 'user', 'user.shop')
+            ->where('auction_product', 0)
+            ->where('slug', $slug)
+            ->where('approved', 1)
+            ->first();
 
         if ($detailedProduct != null && $detailedProduct->published) {
             if ((get_setting('vendor_system_activation') != 1) && $detailedProduct->added_by == 'seller') {
@@ -499,28 +560,35 @@ class HomeController extends Controller
                 abort(404);
             }
 
-            $product_queries = ProductQuery::where('product_id', $detailedProduct->id)->where('customer_id', '!=', Auth::id())->latest('id')->paginate(3);
+            $product_queries = ProductQuery::where('product_id', $detailedProduct->id)
+                ->where('customer_id', '!=', Auth::id())
+                ->latest('id')
+                ->paginate(3);
             $total_query = ProductQuery::where('product_id', $detailedProduct->id)->count();
             $reviews = $detailedProduct->reviews()->paginate(3);
 
             // Pagination using Ajax
             if (request()->ajax()) {
                 if ($request->type == 'query') {
-                    return Response::json(View::make('frontend.' . get_setting('homepage_select') . '.partials.product_query_pagination', array('product_queries' => $product_queries))->render());
+                    return Response::json(View::make('frontend.' . get_setting('homepage_select') . '.partials.product_query_pagination', ['product_queries' => $product_queries])->render());
                 }
                 if ($request->type == 'review') {
-                    return Response::json(View::make('frontend.product_details.reviews', array('reviews' => $reviews))->render());
+                    return Response::json(View::make('frontend.product_details.reviews', ['reviews' => $reviews])->render());
                 }
             }
-
-            // review status
+            // Fetch SKU from the product_stocks table based on product_id
+            $productStock = ProductStock::where('product_id', $detailedProduct->id)->first();
+            $sku = $productStock ? $productStock->sku : null; // Get SKU or null if not found
+            // Review status
             $review_status = 0;
             if (Auth::check()) {
                 $OrderDetail = OrderDetail::with([
                     'order' => function ($q) {
                         $q->where('user_id', Auth::id());
                     }
-                ])->where('product_id', $detailedProduct->id)->where('delivery_status', 'delivered')->first();
+                ])->where('product_id', $detailedProduct->id)
+                    ->where('delivery_status', 'delivered')
+                    ->first();
                 $review_status = $OrderDetail ? 1 : 0;
             }
 
@@ -543,11 +611,15 @@ class HomeController extends Controller
             $warranty = $detailedProduct->warranty ?? null;
             $return_days = $detailedProduct->day_return ?? null;
 
-            return view('frontend.product_details', compact('detailedProduct', 'product_queries', 'total_query', 'reviews', 'review_status', 'warranty', 'return_days'));
+            // Define bright_link (example logic; update as necessary)
+            $bright_link = $detailedProduct->bright_link ?? null;
+
+            return view('frontend.product_details', compact('detailedProduct', 'product_queries', 'total_query', 'reviews', 'review_status', 'warranty', 'return_days', 'bright_link', 'sku'));
         }
 
         abort(404);
     }
+
 
     public function shop($slug)
     {
@@ -968,7 +1040,7 @@ class HomeController extends Controller
             'secretkey' => '61784eda',
             'callerID' => '8809612444767',
             'toUser' => $request->phone,
-            'messageContent' => "Your OTP is: $otp\nPlease use this code to verify your number.\nThanks For Staying with www.amaderbazar.net",
+            'messageContent' => "Your OTP is: $otp\nPlease use this code to verify your number.\nThanks For Staying with www.celcombazar.com",
         ]);
 
         // Return response with success message

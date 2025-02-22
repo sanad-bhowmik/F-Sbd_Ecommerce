@@ -47,17 +47,112 @@ use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\SizeChartController;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Http\Request;
 
-/*
-  |--------------------------------------------------------------------------
-  | Web Routes
-  |--------------------------------------------------------------------------
-  |
-  | Here is where you can register web routes for your application. These
-  | routes are loaded by the RouteServiceProvider within a group which
-  | contains the "web" middleware group. Now create something great!
-  |
- */
+
+Route::post('/send-mail', function (Request $request) {
+    $toEmail = $request->input('email');
+
+    // Check if the email is provided
+    if (empty($toEmail)) {
+        return response()->json(['message' => 'Email is required!'], 400);
+    }
+
+    // Generate a 4-digit OTP
+    $otp = rand(1000, 9999);
+
+    // Send OTP email content
+    $emailContent = " Your OTP for Email verification is: {$otp}";
+
+    // Send email with OTP
+    Mail::raw($emailContent, function ($message) use ($toEmail) {
+        $message->to($toEmail)  // Send to the input email address
+            ->from(config('mail.username')) // Use the configured email address
+            ->subject('Email Verification');
+    });
+
+    // Store OTP in the user's email_otp column
+    $user = Auth::user();
+    if ($user) {
+        $user->email_otp = $otp; // Set OTP to the user's email_otp column
+        $user->save(); // Save the OTP to the database
+    }
+
+    // Return a success message with OTP
+    return response()->json(['message' => 'Email sent successfully!', 'otp' => $otp]);
+})->name('send.mail');
+
+
+// Verify OTP - Changed to 'verifyMailOtp'
+Route::post('/verify-mail-otp', function (Request $request) {
+    $otp = $request->input('otp');
+
+    // Check if OTP is provided
+    if (empty($otp)) {
+        return response()->json(['message' => 'OTP is required!'], 400);
+    }
+
+    // Get the logged-in user
+    $user = Auth::user();
+
+    // Check if user exists and OTP matches
+    if ($user && $user->email_otp == $otp) {
+        return response()->json(['message' => 'OTP verified successfully!']);
+    } else {
+        return response()->json(['message' => 'Invalid OTP!'], 400);
+    }
+})->name('verifyMailOtp');
+
+
+
+Route::get('/cart-data', function () {
+    $carts = get_user_cart();
+    $total = 0;
+
+    foreach ($carts as $cartItem) {
+        $product = get_single_product($cartItem['product_id']);
+        if ($product) {
+            $total += cart_product_price($cartItem, $product, false) * $cartItem['quantity'];
+        }
+    }
+
+    return response()->json([
+        'cart_count' => count($carts),
+        'cart_items' => $carts,
+        'total' => single_price($total)
+    ]);
+});
+
+Route::get('/wishlist/count', function () {
+    $userId = Auth::id();
+    $totalSaved = 0;
+
+    // Fetch saved products count only if the user is authenticated
+    if ($userId) {
+        $totalSaved = DB::table('save_later_product')
+            ->where('user_id', $userId)
+            ->count();
+    }
+
+    return response()->json(['count' => $totalSaved]);
+});
+Route::get('/user-wishlist/count', function () {
+    $userId = Auth::id();
+    $totalWishlist = 0;
+
+    // Fetch wishlist products count only if the user is authenticated
+    if ($userId) {
+        $totalWishlist = DB::table('wishlists')
+            ->where('user_id', $userId)
+            ->count();
+    }
+
+    return response()->json(['count' => $totalWishlist]);
+});
 
 Route::controller(DemoController::class)->group(function () {
     Route::get('/demo/cron_1', 'cron_1');
@@ -117,8 +212,8 @@ Route::controller(HomeController::class)->group(function () {
     Route::post('/password/reset', [HomeController::class, 'resetPassword'])->name('password.reset');
 
     //   Route::post('/password/phone/verify', [ForgotPasswordController::class, 'verifyAndResetPassword'])->name('password.phone.verify');
-
-
+    Route::get('/contact', 'contact')->name('contact');
+    Route::get('/faq', 'faq')->name('faq');
     Route::get('/users/login', 'login')->name('user.login')->middleware('handle-demo-login');
     Route::get('/seller/login', 'login')->name('seller.login')->middleware('handle-demo-login');
     Route::get('/deliveryboy/login', 'login')->name('deliveryboy.login')->middleware('handle-demo-login');
@@ -211,11 +306,11 @@ Route::controller(SearchController::class)->group(function () {
 // Cart
 Route::controller(CartController::class)->group(function () {
     Route::get('/cart', 'index')->name('cart');
-    Route::post('/cart/show-cart-modal', 'showCartModal')->name('cart.showCartModal');
+    Route::post('/cart/show-cart-modal', 'p')->name('cart.showCartModal');
     Route::post('/cart/addtocart', 'addToCart')->name('cart.addToCart');
     Route::post('/cart/removeFromCart', 'removeFromCart')->name('cart.removeFromCart');
     Route::post('/cart/updateQuantity', 'updateQuantity')->name('cart.updateQuantity');
-    Route::get('/cart/total', 'getCartTotal');
+
 });
 
 //Paypal START
@@ -256,6 +351,7 @@ Route::controller(CompareController::class)->group(function () {
     Route::get('/compare/reset', 'reset')->name('compare.reset');
     Route::post('/compare/addToCompare', 'addToCompare')->name('compare.addToCompare');
     Route::get('/compare/details/{id}', 'details')->name('compare.details');
+    Route::get('/compare/count', 'getCompareCount')->name('compare.count');
 });
 
 // Subscribe
@@ -271,6 +367,12 @@ Route::group(['middleware' => ['user', 'verified', 'unbanned']], function () {
         Route::post('/user/update-profile', 'userProfileUpdate')->name('user.profile.update');
         Route::post('/user/send-otp-number', 'sendOtpNumber')->name('user.send.otpNumber');
         Route::post('/user/verify-otp-number', 'verifyOtpNumber')->name('user.verify.otpNumber');
+        Route::post('/user/send-mail', 'sendMail')->name('user.send.mail');
+        Route::post('/update-phone-number', 'updatePhoneNumber')->name('update-phone-number');
+
+
+        // Route::post('/update-phone-number', [UserController::class, 'updatePhoneNumber'])->name('update-phone-number');
+        // Route::get('/user/send-mail', [HomeController::class, 'sendMail'])->name('user.send.mail');
 
     });
 
@@ -303,6 +405,7 @@ Route::group(['middleware' => ['customer', 'verified', 'unbanned']], function ()
     Route::controller(PurchaseHistoryController::class)->group(function () {
         Route::get('/purchase_history/details/{id}', 'purchase_history_details')->name('purchase_history.details');
         Route::get('/purchase_history/destroy/{id}', 'order_cancel')->name('purchase_history.destroy');
+
         Route::get('digital-purchase-history', 'digital_index')->name('digital_purchase_history.index');
         Route::get('/digital-products/download/{id}', 'download')->name('digital-products.download');
 
@@ -310,7 +413,7 @@ Route::group(['middleware' => ['customer', 'verified', 'unbanned']], function ()
     });
 
     // Wishlist
-    Route::get('wishlists', WishlistController::class);
+    Route::resource('wishlists', WishlistController::class);
     Route::post('/wishlists/remove', [WishlistController::class, 'remove'])->name('wishlists.remove');
 
     //Follow
